@@ -35,11 +35,24 @@ class Data_Preparation:
         self.set_default_feature_values()
 
 if __name__ == '__main__':
-    airbnb_df = pd.read_csv('listing.csv', index_col='ID')
+    airbnb_df = pd.read_csv('/Users/apple/Documents/GitHub/Data_Science_Airbnb/airbnb_datasets/listing.csv', index_col='ID')
     airbnb_df.drop('Unnamed: 19', axis=1, inplace=True)
     Data_processor = Data_Preparation()
     Data_processor.clean_tabular_data(airbnb_df)
-
     airbnb_df.to_csv(r'/Users/apple/Documents/GitHub/Data_Science_Airbnb/airbnb_datasets/clean_tabular_data.csv') 
+    print(airbnb_df.info())
+
+def load_airbnb(label:str, df):
+    features=df.drop(label, axis=1)
+    labels=df[label]
+    features = features.select_dtypes(include =['float64', 'int64'])
+    return(features, labels)
+    
+
+
+X,y = load_airbnb('Price_Night', airbnb_df)
+
+print(X)
+y.shape
     
 
