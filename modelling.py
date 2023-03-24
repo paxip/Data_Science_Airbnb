@@ -10,10 +10,20 @@ import pandas as pd
 
 def splits_dataset(X,y):
     print(f"Number of samples in dataset: {len(X)}")
+    
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
     print("Number of samples in:")
     print(f"    Training: {len(y_train)}")
     print(f"    Testing: {len(y_test)}")
+    
+    X_test, X_validation, y_test, y_validation = train_test_split(X_test, y_test, test_size=0.5)
+    print("Number of samples in:")
+    print(f"    Training: {len(y_train)}")
+    print(f"    Validation: {len(y_validation)}")
+    print(f"    Testing: {len(y_test)}")
+
+
+
        
 
 
