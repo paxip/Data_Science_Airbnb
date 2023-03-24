@@ -4,9 +4,9 @@ from sklearn.linear_model import SGDRegressor
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 from tabular_data import Data_Preparation
-from tabular_data import load_airbnb
 import numpy as np
 import pandas as pd
+
 
 def splits_dataset(X,y):
     print(f"Number of samples in dataset: {len(X)}")
@@ -21,6 +21,8 @@ def splits_dataset(X,y):
     print(f"    Training: {len(y_train)}")
     print(f"    Validation: {len(y_validation)}")
     print(f"    Testing: {len(y_test)}")
+
+
 
 
 
@@ -50,6 +52,6 @@ def splits_dataset(X,y):
 
 
 if __name__ == '__main__':
-       airbnb_df = Data_Preparation.clean_tabular_data()
-       X,y = load_airbnb('Price_Night', airbnb_df)
-       print(y.shape)
+    listing_df = pd.read_csv('/Users/apple/Documents/GitHub/Data_Science_Airbnb/airbnb_datasets/clean_tabular_data.csv')
+    X,y = Data_Preparation.load_airbnb('Price_Night', listing_df)
+    print(X)
