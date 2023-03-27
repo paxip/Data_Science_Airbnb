@@ -6,6 +6,7 @@ from sklearn.linear_model import SGDRegressor
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 from tabular_data import Data_Preparation
+import itertools
 import numpy as np
 import pandas as pd
 
@@ -40,6 +41,34 @@ def evaluate_regression_model(y_test_pred, y_train_pred, data_sets):
     R2_train = r2_score(data_sets[1], y_train_pred)
     R2_test = r2_score(data_sets[3], y_test_pred)
     print(f"R2 for train set: {R2_train} | "f"R2 for test set: {R2_test}")
+
+def custom_tune_regression_model_hyperparameters(model_type, X_train, y_train, X_validation, y_validation, grid_dict):
+    keys, values = zip(*grid_dict.items())
+    iteration_dicts = [dict(zip(keys, v)) for v in itertools.product(*values)]
+    RMSE_list = []
+
+    for iteration in iteration_dicts:
+            model = model_type(learning_rate=iteration['learning_rate'], max_iter=iteration['max_iter'])
+            #model.fit(X_train, y_train)
+            linear_regression_model(data_sets)
+            # y_train_pred = model.predict(X_train)
+            # train_RMSE = mean_squared_error(y_train, y_train_pred, squared=False)
+            y_validation_pred = model.predict(X_validation)
+            validation_RMSE = mean_squared_error(y_validation, y_validation_pred, squared=False)
+            validation_MAE = mean_absolute_error(y_validation, y_validation_pred)
+            validation_R2 = r2_score(y_validation, y_validation_pred)
+            RMSE_list.append(validation_RMSE)
+            print(f"This iteration RMSE is {validation_RMSE}")
+            if validation_RMSE <= min(RMSE_list):
+                best_model = model
+                best_iteration_parameters = iteration
+                best_validation_RMSE = validation_RMSE
+                best_validation_MAE = validation_MAE
+                best_validation_R2 = validation_R2
+                print(f"The best RMSE is {best_validation_RMSE}")
+                performance_metrics = {'validation RMSE': best_validation_RMSE, 'validation MAE': best_validation_MAE, 'validation R2': best_validation_R2}
+    return best_model, performance_metrics, best_iteration_parameters
+
 
 
 
