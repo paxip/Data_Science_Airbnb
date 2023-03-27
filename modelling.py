@@ -1,5 +1,7 @@
 
 from sklearn import datasets
+from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import r2_score
 from sklearn.linear_model import SGDRegressor
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
@@ -13,7 +15,8 @@ def splits_dataset(X,y):
     print(f"Number of samples in dataset: {len(X)}") 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
     X_test, X_validation, y_test, y_validation = train_test_split(X_test, y_test, test_size=0.5)
-    data_sets = [X_train, y_train, X_test, y_test, X_validation, y_validation]
+    return X_train, y_train, X_test, y_test, X_validation, y_validation
+   
 
 def linear_regression_model(data_sets):
     model = SGDRegressor()
@@ -21,34 +24,27 @@ def linear_regression_model(data_sets):
     y_train_pred = model.predict(data_sets[0])
     y_validation_pred = model.predict(data_sets[4])
     y_test_pred = model.predict(data_sets[2])
+    return y_train_pred, y_validation_pred, y_test_pred
 
+def evaluate_regression_model(y_test_pred, y_train_pred, data_sets):
+    train_loss = mean_squared_error(data_sets[1], y_train_pred)
+    test_loss = mean_squared_error(data_sets[3], y_test_pred)
 
+    MSE_train = mean_squared_error(data_sets[1], y_train_pred)
+    MSE_test = mean_squared_error(data_sets[3], y_test_pred)
+    print(f"MSE for train set: {MSE_train} | "f"MSE for test set: {MSE_test}")
 
+    RMSE_train = mean_squared_error(data_sets[1], y_train_pred, squared=False)
+    RMSE_test = mean_squared_error(data_sets[3], y_test_pred, squared=False)
+    print(f"RMSE for train set: {RMSE_train} | "f"RMSE for test set: {RMSE_test}")
 
+    MAE_train = mean_absolute_error(data_sets[1], y_train_pred)
+    MAE_test = mean_absolute_error(data_sets[3], y_test_pred)
+    print(f"MAE for train set: {MAE_train} | "f"MAE for test set: {MAE_test}")
 
-
-
-
-
-
-       
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    R2_train = r2_score(data_sets[1], y_train_pred)
+    R2_test = r2_score(data_sets[3], y_test_pred)
+    print(f"R2 for train set: {R2_train} | "f"R2 for test set: {R2_test}")
 
 
 
@@ -60,3 +56,9 @@ if __name__ == '__main__':
     airbnb_df = pd.read_csv('/Users/apple/Documents/GitHub/Data_Science_Airbnb/airbnb_datasets/clean_tabular_data.csv')
     X,y = Data_Preparation.load_airbnb('Price_Night', airbnb_df)
     print(X)
+    splits_dataset(X,y)
+    X_train, y_train, X_test, y_test, X_validation, y_validation = splits_dataset(X,y)
+    data_sets = [X_train, y_train, X_test, y_test, X_validation, y_validation]
+    linear_regression_model(data_sets)
+    evaluate_regression_model(y_test_pred, y_train_pred, data_sets)
+
