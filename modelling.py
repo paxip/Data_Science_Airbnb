@@ -11,20 +11,15 @@ import pandas as pd
 
 
 
+
 def splits_dataset(X,y):
     print(f"Number of samples in dataset: {len(X)}") 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
     X_test, X_validation, y_test, y_validation = train_test_split(X_test, y_test, test_size=0.5)
     return X_train, y_train, X_test, y_test, X_validation, y_validation
    
-
 def linear_regression_model(data_sets):
-    model = SGDRegressor()
     model.fit(data_sets[0], data_sets[1])
-    y_train_pred = model.predict(data_sets[0])
-    y_validation_pred = model.predict(data_sets[4])
-    y_test_pred = model.predict(data_sets[2])
-    return y_train_pred, y_validation_pred, y_test_pred
 
 def evaluate_regression_model(y_test_pred, y_train_pred, data_sets):
     train_loss = mean_squared_error(data_sets[1], y_train_pred)
@@ -59,6 +54,12 @@ if __name__ == '__main__':
     splits_dataset(X,y)
     X_train, y_train, X_test, y_test, X_validation, y_validation = splits_dataset(X,y)
     data_sets = [X_train, y_train, X_test, y_test, X_validation, y_validation]
+    model = SGDRegressor()
+    
     linear_regression_model(data_sets)
+    y_train_pred = model.predict(data_sets[0])
+    y_validation_pred = model.predict(data_sets[4])
+    y_test_pred = model.predict(data_sets[2])
+    
     evaluate_regression_model(y_test_pred, y_train_pred, data_sets)
 
