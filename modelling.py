@@ -91,7 +91,7 @@ if __name__ == '__main__':
     y_test_pred = model.predict(data_sets[2])
     
     evaluate_regression_model(y_test_pred, y_train_pred, data_sets)
-    grid_dict = {'learning_rate': ['constant', 'optimal', 'invscaling', 'adaptive'], 'max_iter': [500, 1000, 1500, 2000]}
+    grid_dict = {'learning_rate': ['constant', 'optimal', 'invscaling', 'adaptive'], 'max_iter': [500, 1000, 1500, 2000, 2500, 3000], 'loss': ['squared_error', 'huber', 'epsilon_insensitive', 'squared_epsilon_insensitive'], 'fit_intercept' : [True, False], 'alpha': [0.00005,0.0001, 0.00015, 0.0002]}
 
 
     best_model, performance_metrics, best_iteration_parameters = custom_tune_regression_model_hyperparameters(SGDRegressor, X_train, y_train, X_validation, y_validation, grid_dict)
