@@ -9,6 +9,7 @@ from sklearn.model_selection import train_test_split
 from tabular_data import Data_Preparation
 from typing import Any
 import joblib
+import json
 import itertools
 import numpy as np
 import os
@@ -83,27 +84,24 @@ def tune_regression_model_hyperparametes():
     print("\n The best score across ALL searched params:\n",grid_LR.best_score_)
     print("\n The best parameters across ALL searched params:\n",grid_LR.best_params_)
 
-def create_directories(model_path, reg_path):
-    path = os.path.join(model_path, reg_path)  
-    try:
-        os.makedirs(path, exist_ok=True)
-    except OSError as error:
-        print("Directory '%s' can not be created")
-    return path
    
-def save_model(fp, filename):
-    try:
-        with open(os.path.join(fp, filename), "w") as outfile:
-            joblib.dump(model, filename)
-            print('model.joblib file created.')
-            return True
-        
-    except Exception as e:
-        print(e)
-        return False
-  
-     
-     
+def save_model():
+    folder = 'models/regression/linear_regression'
+    parent_folder = '/Users/apple/Documents/GitHub/Data_Science_Airbnb'
+    path = os.path.join(parent_folder, folder)
+    os.makedirs(path)
+    
+
+    # filenames = ['model.joblib', 'hyperparameters.json', 'metrics.json']
+
+    # for filename in filenames:
+    #     os.path.join(filename, folder)
+    #     joblib.dump(model, filenames[0])
+    #     # json.dump(parameters, filenames[1])
+    #     # json.dump(performance_metrics, filenames[2])
+
+
+
      
 
 
@@ -148,10 +146,8 @@ if __name__ == '__main__':
     # print(f"The best performance_metrics are {performance_metrics}")
 
     # tune_regression_model_hyperparametes()
-
-    create_directories('/Users/apple/Documents/GitHub/Data_Science_Airbnb/model', 'regression')
     
-    save_model('/Users/apple/Documents/GitHub/Data_Science_Airbnb/model/regression', '/Users/apple/Documents/GitHub/Data_Science_Airbnb/model/regression/model.joblib')
+    save_model()
   
     
 
