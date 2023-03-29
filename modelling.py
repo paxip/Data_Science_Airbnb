@@ -7,10 +7,12 @@ from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
 from tabular_data import Data_Preparation
+from typing import Any
 import joblib
 import itertools
 import numpy as np
 import os
+import os.path
 import pandas as pd
 
 
@@ -81,12 +83,25 @@ def tune_regression_model_hyperparametes():
     print("\n The best score across ALL searched params:\n",grid_LR.best_score_)
     print("\n The best parameters across ALL searched params:\n",grid_LR.best_params_)
 
-def save_model(model_path, reg_path):
-    os.mkdir(model_path)
-    os.mkdir(reg_path)
-
-     
-     
+def create_directories(model_path, reg_path):
+    path = os.path.join(model_path, reg_path)  
+    try:
+        os.makedirs(path, exist_ok=True)
+    except OSError as error:
+        print("Directory '%s' can not be created")
+    return path
+   
+def save_model(fp, filename):
+    try:
+        with open(os.path.join(fp, filename), "w") as outfile:
+            joblib.dump(model, filename)
+            print('model.joblib file created.')
+            return True
+        
+    except Exception as e:
+        print(e)
+        return False
+  
      
      
      
@@ -134,8 +149,10 @@ if __name__ == '__main__':
 
     # tune_regression_model_hyperparametes()
 
-    save_model('/Users/apple/Documents/GitHub/Data_Science_Airbnb/model', '/Users/apple/Documents/GitHub/Data_Science_Airbnb/model/regression')
-   
+    create_directories('/Users/apple/Documents/GitHub/Data_Science_Airbnb/model', 'regression')
+    
+    save_model('/Users/apple/Documents/GitHub/Data_Science_Airbnb/model/regression', '/Users/apple/Documents/GitHub/Data_Science_Airbnb/model/regression/model.joblib')
+  
     
 
     
