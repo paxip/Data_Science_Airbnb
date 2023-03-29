@@ -7,8 +7,10 @@ from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
 from tabular_data import Data_Preparation
+import joblib
 import itertools
 import numpy as np
+import os
 import pandas as pd
 
 
@@ -79,6 +81,18 @@ def tune_regression_model_hyperparametes():
     print("\n The best score across ALL searched params:\n",grid_LR.best_score_)
     print("\n The best parameters across ALL searched params:\n",grid_LR.best_params_)
 
+def save_model(model_path, reg_path):
+    os.mkdir(model_path)
+    os.mkdir(reg_path)
+
+     
+     
+     
+     
+     
+
+
+
     
     
 
@@ -118,7 +132,12 @@ if __name__ == '__main__':
     # print(f"The best_parameters are {best_iteration_parameters}")
     # print(f"The best performance_metrics are {performance_metrics}")
 
-    tune_regression_model_hyperparametes()
+    # tune_regression_model_hyperparametes()
+
+    save_model('/Users/apple/Documents/GitHub/Data_Science_Airbnb/model', '/Users/apple/Documents/GitHub/Data_Science_Airbnb/model/regression')
+   
+    
+
     
 
 
