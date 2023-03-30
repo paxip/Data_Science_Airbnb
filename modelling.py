@@ -83,118 +83,39 @@ def tune_regression_model_hyperparametes(parameters):
     print("\n The best estimator across ALL searched params:\n",grid_LR.best_estimator_)
     print("\n The best score across ALL searched params:\n",grid_LR.best_score_)
     print("\n The best parameters across ALL searched params:\n",grid_LR.best_params_)
+    metrics = {'best_estimator': grid_LR.best_estimator_, 'best_score': grid_LR.best_score_, 'best_params': grid_LR.best_params_}
+    
+    return metrics
 
 
 def save_model(folder):
     os.makedirs(folder)
-    print(folder)
     filepaths = []
     filenames = ['model.joblib','hyperparameters.json', 'metrics.json']
     for file in filenames:
         filepath = os.path.join(folder, file)
         filepaths.append(filepath)
- 
     model_fp, hyperparams_fp, metrics_fp = filepaths
-    print(model_fp)
+    
     joblib.dump(model, model_fp)
+    
+    with open(hyperparams_fp, 'w') as file:
+        json.dump(parameters, file)
 
-
-
-
-    # model_fp = os.path.join(folder, 'model.joblib')
-    # hyperparams_fp = os.path.json(folder, )
-    # print(model_fp)
-
-
-    # hyperparameters_fp = os.path.join('hyperparamerers.json', folder)
-    # metrics_fp = os.path.join('metrics.json', folder)
-
-    # joblib.dump(model, model_fp)
+    with open(metrics_fp, 'w') as file:
+        json.dump(metrics, file)
     
     
     
-    
-    
-    
-    
-    # filename = ['model.joblib','hyperparameters.json', 'metrics.json']
-    # for file in filename:
-    #     os.path.join(file, folder)
-    
-    # joblib.dump(model, filename[0])
-
-
-
-        # joblib.dump(model, filename[0])
 
 
 
 
-
-
-
-
-    # folder = 'models/regression/linear_regression'
-    # parent_folder = '/Users/apple/Documents/GitHub/Data_Science_Airbnb'
-    # path = os.path.join(parent_folder, folder)
-    # os.makedirs(path)
-    # filepaths=[]
-
-    # filename = ['model.joblib','hyperparameters.json', 'metrics.json']
-    # for file in filename:
-    #     filepath = os.path.join(folder, file)
-    #     filepaths.append(filepath)
-
-    # print(filepaths)
-    
-    # joblib.dump(model, filename[0])
-
- 
-
-
-    
-   
-
-   
-
-    
-
-
-        
-
-   
-    
-
-    # filenames = {'model.joblib', 'hyperparameters.json', 'metrics.json'}
-
-    # for filename in filenames:
-    #     os.path.join(filename, folder)
-        
-    #     joblib.dump(model, filenames[0])
-    #     # json.dump(parameters, filenames[1])
-    #     # json.dump(performance_metrics, filenames[2])
-
-
-
-     
 
 
 
     
-    
-
-
-
-
-     
-        
-
-
-
-
-
-
-
+  
 
 if __name__ == '__main__':
     airbnb_df = pd.read_csv('/Users/apple/Documents/GitHub/Data_Science_Airbnb/airbnb_datasets/clean_tabular_data.csv')
