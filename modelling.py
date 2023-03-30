@@ -75,7 +75,7 @@ def custom_tune_regression_model_hyperparameters(model_type, X_train, y_train, X
                 performance_metrics = {'validation RMSE': best_validation_RMSE, 'validation MAE': best_validation_MAE, 'validation R2': best_validation_R2}
     return best_model, performance_metrics, best_iteration_parameters
 
-def tune_regression_model_hyperparametes(parameters):
+def tune_regression_model_hyperparameters():
     parameters = {'loss': ['squared_error', 'huber', 'epsilon_insensitive'], 'alpha': [0.00005,0.0001, 0.0002,], 'max_iter': [500, 1000, 1500]}
     grid_LR = GridSearchCV(estimator=model, param_grid=parameters, cv=2, refit=True)
     grid_LR.fit(data_sets[0], data_sets[1])
@@ -83,12 +83,12 @@ def tune_regression_model_hyperparametes(parameters):
     print("\n The best estimator across ALL searched params:\n",grid_LR.best_estimator_)
     print("\n The best score across ALL searched params:\n",grid_LR.best_score_)
     print("\n The best parameters across ALL searched params:\n",grid_LR.best_params_)
-    metrics = {'best_estimator': grid_LR.best_estimator_, 'best_score': grid_LR.best_score_, 'best_params': grid_LR.best_params_}
-    
+    metrics = {'best_score': grid_LR.best_score_, 'best_params': grid_LR.best_params_}
+    print(metrics)
     return metrics
 
 
-def save_model(folder):
+def save_model(model, parameters, metrics, folder):
     os.makedirs(folder)
     filepaths = []
     filenames = ['model.joblib','hyperparameters.json', 'metrics.json']
@@ -143,7 +143,8 @@ if __name__ == '__main__':
     # tune_regression_model_hyperparameters()
     parameters = {'loss': ['squared_error', 'huber', 'epsilon_insensitive'], 'alpha': [0.00005,0.0001, 0.0002,], 'max_iter': [500, 1000, 1500]}
     
-    save_model('models/regression/linear_regression')
+    metrics = tune_regression_model_hyperparameters()
+    save_model(model, parameters, metrics, 'models/regression/linear_regression')
   
     
 
@@ -151,4 +152,4 @@ if __name__ == '__main__':
 
 
 
-
+# 'best_estimator': grid_LR.best_estimator_, 
