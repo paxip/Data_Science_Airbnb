@@ -75,7 +75,7 @@ def custom_tune_regression_model_hyperparameters(model_type, X_train, y_train, X
                 performance_metrics = {'validation RMSE': best_validation_RMSE, 'validation MAE': best_validation_MAE, 'validation R2': best_validation_R2}
     return best_model, performance_metrics, best_iteration_parameters
 
-def tune_regression_model_hyperparametes():
+def tune_regression_model_hyperparametes(parameters):
     parameters = {'loss': ['squared_error', 'huber', 'epsilon_insensitive'], 'alpha': [0.00005,0.0001, 0.0002,], 'max_iter': [500, 1000, 1500]}
     grid_LR = GridSearchCV(estimator=model, param_grid=parameters, cv=2, refit=True)
     grid_LR.fit(data_sets[0], data_sets[1])
@@ -84,18 +84,92 @@ def tune_regression_model_hyperparametes():
     print("\n The best score across ALL searched params:\n",grid_LR.best_score_)
     print("\n The best parameters across ALL searched params:\n",grid_LR.best_params_)
 
+
+def save_model(folder):
+    os.makedirs(folder)
+    print(folder)
+    filepaths = []
+    filenames = ['model.joblib','hyperparameters.json', 'metrics.json']
+    for file in filenames:
+        filepath = os.path.join(folder, file)
+        filepaths.append(filepath)
+ 
+    model_fp, hyperparams_fp, metrics_fp = filepaths
+    print(model_fp)
+    joblib.dump(model, model_fp)
+
+
+
+
+    # model_fp = os.path.join(folder, 'model.joblib')
+    # hyperparams_fp = os.path.json(folder, )
+    # print(model_fp)
+
+
+    # hyperparameters_fp = os.path.join('hyperparamerers.json', folder)
+    # metrics_fp = os.path.join('metrics.json', folder)
+
+    # joblib.dump(model, model_fp)
+    
+    
+    
+    
+    
+    
+    
+    # filename = ['model.joblib','hyperparameters.json', 'metrics.json']
+    # for file in filename:
+    #     os.path.join(file, folder)
+    
+    # joblib.dump(model, filename[0])
+
+
+
+        # joblib.dump(model, filename[0])
+
+
+
+
+
+
+
+
+    # folder = 'models/regression/linear_regression'
+    # parent_folder = '/Users/apple/Documents/GitHub/Data_Science_Airbnb'
+    # path = os.path.join(parent_folder, folder)
+    # os.makedirs(path)
+    # filepaths=[]
+
+    # filename = ['model.joblib','hyperparameters.json', 'metrics.json']
+    # for file in filename:
+    #     filepath = os.path.join(folder, file)
+    #     filepaths.append(filepath)
+
+    # print(filepaths)
+    
+    # joblib.dump(model, filename[0])
+
+ 
+
+
+    
    
-def save_model():
-    folder = 'models/regression/linear_regression'
-    parent_folder = '/Users/apple/Documents/GitHub/Data_Science_Airbnb'
-    path = os.path.join(parent_folder, folder)
-    os.makedirs(path)
+
+   
+
     
 
-    # filenames = ['model.joblib', 'hyperparameters.json', 'metrics.json']
+
+        
+
+   
+    
+
+    # filenames = {'model.joblib', 'hyperparameters.json', 'metrics.json'}
 
     # for filename in filenames:
     #     os.path.join(filename, folder)
+        
     #     joblib.dump(model, filenames[0])
     #     # json.dump(parameters, filenames[1])
     #     # json.dump(performance_metrics, filenames[2])
@@ -145,9 +219,10 @@ if __name__ == '__main__':
     # print(f"The best_parameters are {best_iteration_parameters}")
     # print(f"The best performance_metrics are {performance_metrics}")
 
-    # tune_regression_model_hyperparametes()
+    # tune_regression_model_hyperparameters()
+    parameters = {'loss': ['squared_error', 'huber', 'epsilon_insensitive'], 'alpha': [0.00005,0.0001, 0.0002,], 'max_iter': [500, 1000, 1500]}
     
-    save_model()
+    save_model('models/regression/linear_regression')
   
     
 
