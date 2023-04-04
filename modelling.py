@@ -1,11 +1,12 @@
-
-from sklearn.linear_model import SGDRegressor
 from sklearn import datasets
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import SGDRegressor
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import r2_score
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeRegressor
 from tabular_data import Data_Preparation
 from typing import Any
 import joblib
@@ -105,6 +106,8 @@ def save_model(model, parameters, metrics, folder):
     with open(metrics_fp, 'w') as file:
         json.dump(metrics, file)
     
+
+  
     
     
 
@@ -145,6 +148,24 @@ if __name__ == '__main__':
     
     metrics = tune_regression_model_hyperparameters()
     save_model(model, parameters, metrics, 'models/regression/linear_regression')
+
+    def evaluate_all_models():
+        #Decision Tree
+        #Decision Tree Parameters
+        #parameters = {'criterion': ['squared_error', 'friedman_mse', 'absolute_error', 'poisson'], 'splitter': ['best', 'random'], 'max_depth': [None, 2, 5]}
+        
+        #Random Forest
+        parameters = {'n_estimators': [50, 100, 150, 200, 250, 300], criterion: [“squared_error”, “absolute_error”, “friedman_mse”, “poisson”], 'max_depth': []}
+
+
+
+        #Decision Tree + parameters
+        #Random Forests + parameters
+        #Gradient boosting + parameters 
+
+
+
+
   
     
 
