@@ -151,11 +151,13 @@ if __name__ == '__main__':
 
     def evaluate_all_models():
         #Decision Tree
-        #Decision Tree Parameters
         #parameters = {'criterion': ['squared_error', 'friedman_mse', 'absolute_error', 'poisson'], 'splitter': ['best', 'random'], 'max_depth': [None, 2, 5]}
         
         #Random Forest
-        parameters = {'n_estimators': [50, 100, 150, 200, 250, 300], criterion: [“squared_error”, “absolute_error”, “friedman_mse”, “poisson”], 'max_depth': []}
+        #parameters = {'n_estimators': [1, 2, 4, 8, 16, 32, 64, 100, 200], 'criterion' : ['squared_error', 'absolute_error', 'friedman_mse', 'poisson'], 'max_depth': [1, 8, 16, 32, 64], 'min_samples_split': [1, 2, 4, 8], 'min_samples_leaf':  [1, 1.5, 2], 'max_features': ['sqrt', 'log2', None], 'warm_start': [True, False]}
+
+        #Gradient boosting
+        parameters = {'loss': ['squared_error', 'absolute_error', 'huber', 'quantile'], 'learning_rates': [1, 0.5, 0.25, 0.1, 0.05, 0.01], 'n_estimators': [1, 2, 4, 8, 16, 32, 64, 100, 200], 'subsample': [0.0, 0,5, 1.0], 'criterion': ['friedman_mse', 'squared_error'], 'min_samples_leaf': [0.5, 1], 'minimum_weight_fraction': [0.0, 0.25, 0.5]}
 
 
 
