@@ -1,1 +1,0 @@
-{"loss": ["squared_error", "huber", "epsilon_insensitive"], "alpha": [5e-05, 0.0001, 0.0002], "max_iter": [500, 1000, 1500]}
