@@ -1,4 +1,5 @@
 from sklearn import datasets
+from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import SGDRegressor
 from sklearn.metrics import mean_absolute_error
@@ -26,7 +27,7 @@ def splits_dataset(X,y):
     X_test, X_validation, y_test, y_validation = train_test_split(X_test, y_test, test_size=0.5)
     return X_train, y_train, X_test, y_test, X_validation, y_validation
    
-def linear_regression_model(data_sets):
+def linear_regression_model(model, data_sets):
     model.fit(data_sets[0], data_sets[1])
 
 def evaluate_regression_model(y_test_pred, y_train_pred, data_sets):
@@ -76,17 +77,33 @@ def custom_tune_regression_model_hyperparameters(model_type, X_train, y_train, X
                 performance_metrics = {'validation RMSE': best_validation_RMSE, 'validation MAE': best_validation_MAE, 'validation R2': best_validation_R2}
     return best_model, performance_metrics, best_iteration_parameters
 
-def tune_regression_model_hyperparameters():
-    parameters = {'loss': ['squared_error', 'huber', 'epsilon_insensitive'], 'alpha': [0.00005,0.0001, 0.0002,], 'max_iter': [500, 1000, 1500]}
-    grid_LR = GridSearchCV(estimator=model, param_grid=parameters, cv=2, refit=True)
-    grid_LR.fit(data_sets[0], data_sets[1])
-    print(" Results from Grid Search " )
-    print("\n The best estimator across ALL searched params:\n",grid_LR.best_estimator_)
-    print("\n The best score across ALL searched params:\n",grid_LR.best_score_)
-    print("\n The best parameters across ALL searched params:\n",grid_LR.best_params_)
-    metrics = {'best_score': grid_LR.best_score_, 'best_params': grid_LR.best_params_}
+def regression_model_performance(model, data_sets):
+    y_validation_pred = model.predict(data_sets[4])
+    RMSE = mean_squared_error(data_sets[5], y_validation_pred, squared=False)
+    MAE = mean_absolute_error(data_sets[5], y_validation_pred)
+    R2 = r2_score(data_sets[5], y_validation_pred)
+    return RMSE, MAE, R2
+
+def tune_regression_model_hyperparameters(model, parameters, data_sets):
+    best_model = GridSearchCV(estimator=model, param_grid=parameters, cv=2, refit=True)
+    linear_regression_model(best_model, data_sets)
+    # grid_search.fit(data_sets[0], data_sets[1])
+    metrics = regression_model_performance(best_model, data_sets)
+    best_estimator = best_model.best_estimator_
+    best_parameters = best_model.best_params_
     print(metrics)
-    return metrics
+    return metrics, best_estimator, best_parameters
+
+    
+    
+    
+    # print(" Results from Grid Search " )
+    # print("\n The best estimator across ALL searched params:\n",grid_LR.best_estimator_)
+    # print("\n The best score across ALL searched params:\n",grid_LR.best_score_)
+    # print("\n The best parameters across ALL searched params:\n",grid_LR.best_params_)
+    # metrics = {'best_score': grid_LR.best_score_, 'best_params': grid_LR.best_params_}
+    # print(metrics)
+    # return metrics
 
 
 def save_model(model, parameters, metrics, folder):
@@ -105,6 +122,33 @@ def save_model(model, parameters, metrics, folder):
 
     with open(metrics_fp, 'w') as file:
         json.dump(metrics, file)
+
+
+def evaluate_all_models():
+        #SGD Regressor
+        sgdr_parameters = {'loss': ['squared_error', 'huber', 'epsilon_insensitive'], 'alpha': [0.00005,0.0001, 0.0002,], 'max_iter': [500, 1000, 1500]}
+
+        #Decision Tree Regressor
+        dtr_parameters = {'criterion': ['squared_error', 'friedman_mse', 'absolute_error', 'poisson'], 'splitter': ['best', 'random'], 'max_depth': [None, 2, 5]}
+        
+        #Random Forest Regressor
+        rfr_parameters = {'n_estimators': [1, 2, 4, 8, 16, 32, 64, 100, 200], 'criterion' : ['squared_error', 'absolute_error', 'friedman_mse', 'poisson'], 'max_depth': [1, 8, 16, 32, 64], 'min_samples_split': [1, 2, 4, 8], 'min_samples_leaf':  [1, 1.5, 2], 'max_features': ['sqrt', 'log2', None], 'warm_start': [True, False]}
+
+        #Gradient Boosting Regressor
+        gbr_parameters = {'loss': ['squared_error', 'absolute_error', 'huber', 'quantile'], 'learning_rates': [1, 0.5, 0.25, 0.1, 0.05, 0.01], 'n_estimators': [1, 2, 4, 8, 16, 32, 64, 100, 200], 'subsample': [0.0, 0,5, 1.0], 'criterion': ['friedman_mse', 'squared_error'], 'min_samples_leaf': [0.5, 1], 'minimum_weight_fraction': [0.0, 0.25, 0.5]}
+
+        # 1. Create the following:
+        # Decision Tree + parameters
+        #Random Forests + parameters
+        #Gradient boosting + parameters 
+
+        # 2. Create a dictionary with {model: hyperparameters}. 
+        models_parameters = {SGDRegressor(): sgdr_parameters, DecisionTreeRegressor(): dtr_parameters, RandomForestRegressor(): rfr_parameters, GradientBoostingRegressor(): gbr_parameters}
+
+
+        # 3. Iterate through these and apply tune hyperparameters to get best parameters.
+        for model, parameters in models_parameters.items():
+            tune_regression_model_hyperparameters(model, parameters, data_sets)
     
 
   
@@ -124,10 +168,10 @@ if __name__ == '__main__':
     airbnb_df = pd.read_csv('/Users/apple/Documents/GitHub/Data_Science_Airbnb/airbnb_datasets/clean_tabular_data.csv')
     X,y = Data_Preparation.load_airbnb('Price_Night', airbnb_df)
     # print(X)
-    splits_dataset(X,y)
     X_train, y_train, X_test, y_test, X_validation, y_validation = splits_dataset(X,y)
     data_sets = [X_train, y_train, X_test, y_test, X_validation, y_validation]
-    model = SGDRegressor()
+    evaluate_all_models()
+
     
     # linear_regression_model(data_sets)
     # y_train_pred = model.predict(data_sets[0])
@@ -144,26 +188,20 @@ if __name__ == '__main__':
     # print(f"The best performance_metrics are {performance_metrics}")
 
     # tune_regression_model_hyperparameters()
-    parameters = {'loss': ['squared_error', 'huber', 'epsilon_insensitive'], 'alpha': [0.00005,0.0001, 0.0002,], 'max_iter': [500, 1000, 1500]}
+    #parameters = {'loss': ['squared_error', 'huber', 'epsilon_insensitive'], 'alpha': [0.00005,0.0001, 0.0002,], 'max_iter': [500, 1000, 1500]}
     
-    metrics = tune_regression_model_hyperparameters()
-    save_model(model, parameters, metrics, 'models/regression/linear_regression')
+    # metrics = tune_regression_model_hyperparameters()
+    # save_model(model, parameters, metrics, 'models/regression/linear_regression')
 
-    def evaluate_all_models():
-        #Decision Tree
-        #parameters = {'criterion': ['squared_error', 'friedman_mse', 'absolute_error', 'poisson'], 'splitter': ['best', 'random'], 'max_depth': [None, 2, 5]}
-        
-        #Random Forest
-        #parameters = {'n_estimators': [1, 2, 4, 8, 16, 32, 64, 100, 200], 'criterion' : ['squared_error', 'absolute_error', 'friedman_mse', 'poisson'], 'max_depth': [1, 8, 16, 32, 64], 'min_samples_split': [1, 2, 4, 8], 'min_samples_leaf':  [1, 1.5, 2], 'max_features': ['sqrt', 'log2', None], 'warm_start': [True, False]}
-
-        #Gradient boosting
-        parameters = {'loss': ['squared_error', 'absolute_error', 'huber', 'quantile'], 'learning_rates': [1, 0.5, 0.25, 0.1, 0.05, 0.01], 'n_estimators': [1, 2, 4, 8, 16, 32, 64, 100, 200], 'subsample': [0.0, 0,5, 1.0], 'criterion': ['friedman_mse', 'squared_error'], 'min_samples_leaf': [0.5, 1], 'minimum_weight_fraction': [0.0, 0.25, 0.5]}
+    
+    
+    
 
 
 
-        #Decision Tree + parameters
-        #Random Forests + parameters
-        #Gradient boosting + parameters 
+
+
+
 
 
 
@@ -175,4 +213,4 @@ if __name__ == '__main__':
 
 
 
-# 'best_estimator': grid_LR.best_estimator_, 
+
