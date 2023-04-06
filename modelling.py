@@ -22,60 +22,40 @@ import pandas as pd
 
 
 
-def splits_dataset(X,y):
-    print(f"Number of samples in dataset: {len(X)}") 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
-    X_test, X_validation, y_test, y_validation = train_test_split(X_test, y_test, test_size=0.5)
-    return X_train, y_train, X_test, y_test, X_validation, y_validation
+# def splits_dataset(X,y):
+#     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+#     X_test, X_validation, y_test, y_validation = train_test_split(X_test, y_test, test_size=0.5)
+#     return X_train, y_train, X_test, y_test, X_validation, y_validation
    
-def linear_regression_model(model, data_sets):
-    model.fit(data_sets[0], data_sets[1])
+# def linear_regression_model(model, data_sets):
+#     model.fit(data_sets[0], data_sets[1])
 
-def evaluate_regression_model(y_test_pred, y_train_pred, data_sets):
-    train_loss = mean_squared_error(data_sets[1], y_train_pred)
-    test_loss = mean_squared_error(data_sets[3], y_test_pred)
+def get_metrics(y_train, y_train_pred):
+    # RMSE = mean_squared_error(y_train, y_train_pred, squared = False)
+    R2 = r2_score(y_train, y_train_pred)
+    return R2
 
-    MSE_train = mean_squared_error(data_sets[1], y_train_pred)
-    MSE_test = mean_squared_error(data_sets[3], y_test_pred)
-    print(f"MSE for train set: {MSE_train} | "f"MSE for test set: {MSE_test}")
-
-    RMSE_train = mean_squared_error(data_sets[1], y_train_pred, squared=False)
-    RMSE_test = mean_squared_error(data_sets[3], y_test_pred, squared=False)
-    print(f"RMSE for train set: {RMSE_train} | "f"RMSE for test set: {RMSE_test}")
-
-    MAE_train = mean_absolute_error(data_sets[1], y_train_pred)
-    MAE_test = mean_absolute_error(data_sets[3], y_test_pred)
-    print(f"MAE for train set: {MAE_train} | "f"MAE for test set: {MAE_test}")
-
-    R2_train = r2_score(data_sets[1], y_train_pred)
-    R2_test = r2_score(data_sets[3], y_test_pred)
-    print(f"R2 for train set: {R2_train} | "f"R2 for test set: {R2_test}")
-
-def custom_tune_regression_model_hyperparameters(model_type, X_train, y_train, X_validation, y_validation, grid_dict):
+def custom_tune_regression_model_hyperparameters(grid_dict, model_type=SGDRegressor):
     keys, values = zip(*grid_dict.items())
     iteration_dicts = [dict(zip(keys, v)) for v in itertools.product(*values)]
-    RMSE_list = []
+    R2_list = []
 
     for iteration in iteration_dicts:
-            model = model_type(learning_rate=iteration['learning_rate'], max_iter=iteration['max_iter'], loss=iteration['loss'], fit_intercept=iteration['fit_intercept'], alpha=iteration['alpha'])
+            model = model_type()
+            model.set_params(**iteration)
+            # model = model_type(learning_rate=iteration['learning_rate'], max_iter=iteration['max_iter'], loss=iteration['loss'], fit_intercept=iteration['fit_intercept'], alpha=iteration['alpha'])
             #linear_regression_model(data_sets)
             model.fit(X_train, y_train)
-            # y_train_pred = model.predict(X_train)
-            # train_RMSE = mean_squared_error(y_train, y_train_pred, squared=False)
             y_validation_pred = model.predict(X_validation)
-            validation_RMSE = mean_squared_error(y_validation, y_validation_pred, squared=False)
-            validation_MAE = mean_absolute_error(y_validation, y_validation_pred)
             validation_R2 = r2_score(y_validation, y_validation_pred)
-            RMSE_list.append(validation_RMSE)
-            print(f"This iteration RMSE is {validation_RMSE}")
-            if validation_RMSE <= min(RMSE_list):
+            validation_RMSE = mean_squared_error(y_validation, y_validation_pred, squared=False)
+            R2_list.append(validation_R2)
+            
+            if validation_R2 <= min(R2_list):
                 best_model = model
                 best_iteration_parameters = iteration
-                best_validation_RMSE = validation_RMSE
-                best_validation_MAE = validation_MAE
                 best_validation_R2 = validation_R2
-                print(f"The best RMSE is {best_validation_RMSE}")
-                performance_metrics = {'validation RMSE': best_validation_RMSE, 'validation MAE': best_validation_MAE, 'validation R2': best_validation_R2}
+                performance_metrics = {'R2': best_validation_R2, 'RMSE' : validation_RMSE}
     return best_model, performance_metrics, best_iteration_parameters
 
 def regression_model_performance(model, data_sets):
@@ -102,25 +82,42 @@ def save_model(model, parameters, metrics, folder):
     with open(metrics_fp, 'w') as file:
         json.dump(metrics, file)
 
-def tune_regression_model_hyperparameters(model, parameters, data_sets):
-    hyperparameter_tuning = GridSearchCV(estimator=model, param_grid=parameters, cv=2, refit=True)
-    linear_regression_model(hyperparameter_tuning, data_sets)
-    # best_model.fit(data_sets[0], data_sets[1])
-    metrics = regression_model_performance(hyperparameter_tuning, data_sets)
-    best_estimator = hyperparameter_tuning.best_estimator_
-    best_parameters = hyperparameter_tuning.best_params_
-    print(f' The best_estimator is {best_estimator}.')
-    print(f'The best parameters for this estimator are {best_parameters}.')
-    print(f'The metrics for this model are {metrics}')
-    model_name = type(model).__name__
-    save_model(best_estimator, best_parameters, metrics, folder=(f'Data_Science_Airbnb/models/regression/{model_name}'))
-    return metrics, best_estimator, best_parameters
+def tune_regression_model_hyperparameters(model, parameters):
+    grid_search = GridSearchCV(estimator=model, param_grid=parameters, cv=2, refit=True)
+    grid_search.fit(X_train, y_train)
+    
+    
+    best_model = grid_search.best_estimator_
+    best_parameters = grid_search.best_params_
+    best_score = grid_search.best_score_
 
+    y_train_pred = best_model.predict(X_train)
+    metrics = get_metrics(y_train, y_train_pred)
+    
+    model_name = type(model).__name__
+    save_model(best_model, best_parameters, metrics, folder=(f'models/regression/{model_name}'))
+    return best_model
+
+
+
+
+
+
+
+
+    # linear_regression_model(grid_search, data_sets)
+    # best_model.fit(data_sets[0], data_sets[1])
+    # metrics = regression_model_performance(grid_search, data_sets)
+  
+
+    # model_name = type(model).__name__
+    # save_model(best_estimator, best_parameters, metrics, folder=(f'Data_Science_Airbnb/models/regression/{model_name}'))
+    
 
 
 
 def evaluate_all_models():
-    sgdr_parameters = {'loss': ['squared_error', 'huber', 'epsilon_insensitive'], 'alpha': [0.00005,0.0001, 0.0002,], 'max_iter': [500, 1000, 1500]}
+    sgdr_parameters = {'loss': ['squared_error', 'huber', 'epsilon_insensitive'], 'alpha': [0.00005,0.0001, 0.0002,], 'max_iter': [1000, 1500, 2000]}
     dtr_parameters = {'criterion': ['squared_error', 'friedman_mse', 'absolute_error', 'poisson'], 'splitter': ['best', 'random'], 'max_depth': [None, 2, 5]}
     rfr_parameters = {'n_estimators': [1, 2, 4, 8, 16, 32, 64, 100, 200], 'criterion' : ['squared_error', 'absolute_error', 'friedman_mse', 'poisson'], 'max_depth': [1, 8, 16, 32, 64]}
         # 'min_samples_split': [1, 2, 4, 8], 'min_samples_leaf':  [1, 1.5, 2], 'max_features': ['sqrt', 'log2', None], 'warm_start': [True, False]}
@@ -129,8 +126,58 @@ def evaluate_all_models():
 
     models_parameters = {SGDRegressor(): sgdr_parameters, DecisionTreeRegressor(): dtr_parameters, RandomForestRegressor(): rfr_parameters, GradientBoostingRegressor(): gbr_parameters}
     for model, parameters in models_parameters.items():
-        tune_regression_model_hyperparameters(model, parameters, data_sets)
+        best_model = tune_regression_model_hyperparameters(model, parameters)
+        best_models.append(best_model)    
+    return best_models
+    
 
+
+def find_best_model():
+    R2_scores = []
+    best_models = evaluate_all_models()
+    print(best_models)
+    for best_model in best_models:
+        y_test_pred = best_model.predict(X_test)
+        R2 = get_metrics(y_train, y_test_pred)
+        R2_scores.append(R2)
+    print(R2_scores)
+
+    if R2 <= 1:
+        print(best_model, R2)
+
+   
+    
+
+   
+    # best_model.fit(X_tra
+    # in, y_train)
+    # y_validation_pred = best_model.predict(X_validation)
+    # R2_score = r2_score(y_validation, y_validation_pred)
+    # R2_score_list.append(R2_score)
+
+    # best_possible_score = 1
+    
+    # if R2_score <= min(best_possible_score):
+    #     print(best_model)
+
+    
+
+
+
+    
+
+    
+    
+        
+
+
+    
+   
+
+    # 1. Find a score to quantify and compare against all models.
+
+    # Evaluate which model is best.
+    # 2. Take the best model and load its files (model, hyperparameter, metrics.)
 
     
 
@@ -144,11 +191,17 @@ if __name__ == '__main__':
     airbnb_df = pd.read_csv('/Users/apple/Documents/GitHub/Data_Science_Airbnb/airbnb_datasets/clean_tabular_data.csv')
     X,y = Data_Preparation.load_airbnb('Price_Night', airbnb_df)
     X = scale(X)
-    # print(X)
-    X_train, y_train, X_test, y_test, X_validation, y_validation = splits_dataset(X,y)
-    data_sets = [X_train, y_train, X_test, y_test, X_validation, y_validation]
+    # X_train, y_train, X_test, y_test, X_validation, y_validation = splits_dataset(X,y)
+    # data_sets = [X_train, y_train, X_test, y_test, X_validation, y_validation]
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+    X_test, X_validation, y_test, y_validation = train_test_split(X_test, y_test, test_size=0.5)
     
-    evaluate_all_models()
+   
+    best_models = []
+    # evaluate_all_models()
+    
+    find_best_model()
     # RMSE, MAE, R2 = regression_model_performance(model, data_sets)
     # metrics = RMSE, MAE, R2
    
@@ -166,7 +219,11 @@ if __name__ == '__main__':
     # y_test_pred = model.predict(data_sets[2])
     
     # evaluate_regression_model(y_test_pred, y_train_pred, data_sets)
-    # grid_dict = {'learning_rate': ['constant', 'optimal', 'invscaling', 'adaptive'], 'max_iter': [500, 1000, 1500, 2000, 2500, 3000], 'loss': ['squared_error', 'huber', 'epsilon_insensitive', 'squared_epsilon_insensitive'], 'fit_intercept' : [True, False], 'alpha': [0.00005,0.0001, 0.00015, 0.0002]}
+    grid_dict = {'learning_rate': ['constant', 'optimal', 'invscaling', 'adaptive'], 
+                'max_iter': [500, 1000, 1500, 2000, 2500, 3000], 
+                'loss': ['squared_error', 'huber', 'epsilon_insensitive', 'squared_epsilon_insensitive'], 
+                'fit_intercept' : [True, False], 
+                'alpha': [0.00005,0.0001, 0.00015, 0.0002]}
 
 
     # best_model, performance_metrics, best_iteration_parameters = custom_tune_regression_model_hyperparameters(SGDRegressor, X_train, y_train, X_validation, y_validation, grid_dict)
