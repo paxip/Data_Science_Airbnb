@@ -44,7 +44,6 @@ def custom_tune_regression_model_hyperparameters(grid_dict, model_type=SGDRegres
             model = model_type()
             model.set_params(**iteration)
             # model = model_type(learning_rate=iteration['learning_rate'], max_iter=iteration['max_iter'], loss=iteration['loss'], fit_intercept=iteration['fit_intercept'], alpha=iteration['alpha'])
-            #linear_regression_model(data_sets)
             model.fit(X_train, y_train)
             y_validation_pred = model.predict(X_validation)
             validation_R2 = r2_score(y_validation, y_validation_pred)
@@ -150,57 +149,18 @@ def find_best_model():
         json.load(f'Data_Science_Airbnb/models/regression/{model_name}/metrics.json')
 
 
-        
-
-
-   
-    
-
-   
-    # best_model.fit(X_tra
-    # in, y_train)
-    # y_validation_pred = best_model.predict(X_validation)
-    # R2_score = r2_score(y_validation, y_validation_pred)
-    # R2_score_list.append(R2_score)
-
-    # best_possible_score = 1
-    
-    # if R2_score <= min(best_possible_score):
-    #     print(best_model)
-
-    
 
 
 
     
 
     
-    
-        
-
-
-    
-   
-
-    # 1. Find a score to quantify and compare against all models.
-
-    # Evaluate which model is best.
-    # 2. Take the best model and load its files (model, hyperparameter, metrics.)
-
-    
-
-  
-    
-    
-  
-  
+     
 
 if __name__ == '__main__':
     airbnb_df = pd.read_csv('/Users/apple/Documents/GitHub/Data_Science_Airbnb/airbnb_datasets/clean_tabular_data.csv')
     X,y = Data_Preparation.load_airbnb('Price_Night', airbnb_df)
     X = scale(X)
-    # X_train, y_train, X_test, y_test, X_validation, y_validation = splits_dataset(X,y)
-    # data_sets = [X_train, y_train, X_test, y_test, X_validation, y_validation]
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
     X_test, X_validation, y_test, y_validation = train_test_split(X_test, y_test, test_size=0.5)
@@ -210,23 +170,8 @@ if __name__ == '__main__':
     # evaluate_all_models()
     
     find_best_model()
-    # RMSE, MAE, R2 = regression_model_performance(model, data_sets)
-    # metrics = RMSE, MAE, R2
    
 
-
-
-
-
-
-
-    
-    # linear_regression_model(data_sets)
-    # y_train_pred = model.predict(data_sets[0])
-    # y_validation_pred = model.predict(data_sets[4])
-    # y_test_pred = model.predict(data_sets[2])
-    
-    # evaluate_regression_model(y_test_pred, y_train_pred, data_sets)
     grid_dict = {'learning_rate': ['constant', 'optimal', 'invscaling', 'adaptive'], 
                 'max_iter': [500, 1000, 1500, 2000, 2500, 3000], 
                 'loss': ['squared_error', 'huber', 'epsilon_insensitive', 'squared_epsilon_insensitive'], 
@@ -239,11 +184,9 @@ if __name__ == '__main__':
     # print(f"The best_parameters are {best_iteration_parameters}")
     # print(f"The best performance_metrics are {performance_metrics}")
 
-    # tune_regression_model_hyperparameters()
-    #parameters = {'loss': ['squared_error', 'huber', 'epsilon_insensitive'], 'alpha': [0.00005,0.0001, 0.0002,], 'max_iter': [500, 1000, 1500]}
+  
     
-    # metrics = tune_regression_model_hyperparameters()
-    # save_model(model, parameters, metrics, 'models/regression/linear_regression')
+
 
     
     
