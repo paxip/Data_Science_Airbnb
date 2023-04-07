@@ -111,7 +111,7 @@ def tune_regression_model_hyperparameters(model, parameters):
   
 
     # model_name = type(model).__name__
-    # save_model(best_estimator, best_parameters, metrics, folder=(f'Data_Science_Airbnb/models/regression/{model_name}'))
+    # save_model(best_estimator, best_parameters, metrics, folder=(f'Data_Science_Airbnb/models/regression/{model_name}/model.joblib'))
     
 
 
@@ -138,12 +138,20 @@ def find_best_model():
     print(best_models)
     for best_model in best_models:
         y_test_pred = best_model.predict(X_test)
-        R2 = get_metrics(y_train, y_test_pred)
+        R2 = get_metrics(y_test, y_test_pred)
         R2_scores.append(R2)
     print(R2_scores)
 
     if R2 <= 1:
         print(best_model, R2)
+        model_name = type(best_model).__name__
+        joblib.load((f'Data_Science_Airbnb/models/regression/{model_name}/model.joblib'))
+        json.load(f'Data_Science_Airbnb/models/regression/{model_name}/hyperparameters.json')
+        json.load(f'Data_Science_Airbnb/models/regression/{model_name}/metrics.json')
+
+
+        
+
 
    
     
