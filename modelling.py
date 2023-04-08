@@ -114,11 +114,11 @@ def find_best_model():
     print(R2_scores)
 
     if R2 <= 1:
-        print(best_model, R2)
+        print(f'The best_model is {best_model} with an R2 score of {R2}')
         model_name = type(best_model).__name__
-        joblib.load((f'Data_Science_Airbnb/models/regression/{model_name}/model.joblib'))
-        json.load(f'Data_Science_Airbnb/models/regression/{model_name}/hyperparameters.json')
-        json.load(f'Data_Science_Airbnb/models/regression/{model_name}/metrics.json')
+        # joblib.load((f'Data_Science_Airbnb/models/regression/{model_name}/model.joblib'))
+        # json.load(f'Data_Science_Airbnb/models/regression/{model_name}/hyperparameters.json')
+        # json.load(f'Data_Science_Airbnb/models/regression/{model_name}/metrics.json')
 
 
 
