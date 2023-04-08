@@ -37,7 +37,6 @@ class Data_Preparation:
     def load_airbnb(label:str, df):
         features=df.drop(label, axis=1)
         labels=df[label]
-        features = features.select_dtypes(include =['float64', 'int64'])
         return(features, labels)
     
 if __name__ == '__main__':

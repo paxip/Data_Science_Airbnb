@@ -1,4 +1,5 @@
 from sklearn import datasets
+from sklearn import preprocessing
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import SGDRegressor
@@ -20,15 +21,6 @@ import os.path
 import pandas as pd
 
 
-
-
-# def splits_dataset(X,y):
-#     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
-#     X_test, X_validation, y_test, y_validation = train_test_split(X_test, y_test, test_size=0.5)
-#     return X_train, y_train, X_test, y_test, X_validation, y_validation
-   
-# def linear_regression_model(model, data_sets):
-#     model.fit(data_sets[0], data_sets[1])
 
 def get_metrics(y_train, y_train_pred):
     # RMSE = mean_squared_error(y_train, y_train_pred, squared = False)
@@ -97,24 +89,6 @@ def tune_regression_model_hyperparameters(model, parameters):
     save_model(best_model, best_parameters, metrics, folder=(f'models/regression/{model_name}'))
     return best_model
 
-
-
-
-
-
-
-
-    # linear_regression_model(grid_search, data_sets)
-    # best_model.fit(data_sets[0], data_sets[1])
-    # metrics = regression_model_performance(grid_search, data_sets)
-  
-
-    # model_name = type(model).__name__
-    # save_model(best_estimator, best_parameters, metrics, folder=(f'Data_Science_Airbnb/models/regression/{model_name}/model.joblib'))
-    
-
-
-
 def evaluate_all_models():
     sgdr_parameters = {'loss': ['squared_error', 'huber', 'epsilon_insensitive'], 'alpha': [0.00005,0.0001, 0.0002,], 'max_iter': [1000, 1500, 2000]}
     dtr_parameters = {'criterion': ['squared_error', 'friedman_mse', 'absolute_error', 'poisson'], 'splitter': ['best', 'random'], 'max_depth': [None, 2, 5]}
@@ -129,8 +103,6 @@ def evaluate_all_models():
         best_models.append(best_model)    
     return best_models
     
-
-
 def find_best_model():
     R2_scores = []
     best_models = evaluate_all_models()
@@ -158,31 +130,63 @@ def find_best_model():
      
 
 if __name__ == '__main__':
+    # airbnb_df = pd.read_csv('/Users/apple/Documents/GitHub/Data_Science_Airbnb/airbnb_datasets/clean_tabular_data.csv')
+    # X,y = Data_Preparation.load_airbnb('Price_Night', airbnb_df)
+    # X = X.select_dtypes(include =['float64', 'int64'])
+    # X = scale(X)
+
+    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+    # X_test, X_validation, y_test, y_validation = train_test_split(X_test, y_test, test_size=0.5)
+    
+    # best_models = []
+    # find_best_model()
+   
+
+    # grid_dict = {'learning_rate': ['constant', 'optimal', 'invscaling', 'adaptive'], 
+    #             'max_iter': [500, 1000, 1500, 2000, 2500, 3000], 
+    #             'loss': ['squared_error', 'huber', 'epsilon_insensitive', 'squared_epsilon_insensitive'], 
+    #             'fit_intercept' : [True, False], 
+    #             'alpha': [0.00005,0.0001, 0.00015, 0.0002]}
+
+
+    # Keep hashtag best_model, performance_metrics, best_iteration_parameters = custom_tune_regression_model_hyperparameters(SGDRegressor, X_train, y_train, X_validation, y_validation, grid_dict)
+
+
+    # 1. Pass a lisitngs data frame to include 'Category' since it is non numerical data.
+    # 2. Import load_airbnb function like you did for Price_Night but loading in dataset with "Category" as the label.
+    # 3. Find a method to convert 'Category' into numerical data so that it can be used for training the data.
+    # Use sklearn to train a logistic regression model to predict the category from the tabular data.
+
+
     airbnb_df = pd.read_csv('/Users/apple/Documents/GitHub/Data_Science_Airbnb/airbnb_datasets/clean_tabular_data.csv')
-    X,y = Data_Preparation.load_airbnb('Price_Night', airbnb_df)
+    airbnb_df['Category'].astype('category')
+    X,y = Data_Preparation.load_airbnb('Category', airbnb_df)
+    X = X.select_dtypes(include =['float64', 'int64'])
     X = scale(X)
+
+    label_encoder = preprocessing.LabelEncoder()
+    y = label_encoder.fit_transform(y)
+
+    print(y)
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
     X_test, X_validation, y_test, y_validation = train_test_split(X_test, y_test, test_size=0.5)
-    
-   
+
     best_models = []
-    # evaluate_all_models()
-    
     find_best_model()
+
+
+
+    
+
+
+    
+    
+    
+    
+    
    
 
-    grid_dict = {'learning_rate': ['constant', 'optimal', 'invscaling', 'adaptive'], 
-                'max_iter': [500, 1000, 1500, 2000, 2500, 3000], 
-                'loss': ['squared_error', 'huber', 'epsilon_insensitive', 'squared_epsilon_insensitive'], 
-                'fit_intercept' : [True, False], 
-                'alpha': [0.00005,0.0001, 0.00015, 0.0002]}
-
-
-    # best_model, performance_metrics, best_iteration_parameters = custom_tune_regression_model_hyperparameters(SGDRegressor, X_train, y_train, X_validation, y_validation, grid_dict)
-    # print(f"The best model is {best_model}")
-    # print(f"The best_parameters are {best_iteration_parameters}")
-    # print(f"The best performance_metrics are {performance_metrics}")
 
   
     
