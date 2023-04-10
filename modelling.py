@@ -3,7 +3,11 @@ from sklearn import preprocessing
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import SGDRegressor
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import f1_score
 from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import precision_score
+from sklearn.metrics import recall_score
 from sklearn.metrics import r2_score
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import GridSearchCV
@@ -22,10 +26,20 @@ import pandas as pd
 
 
 
-def get_metrics(y_train, y_train_pred):
+def get_regression_metrics(y_train, y_train_pred):
     # RMSE = mean_squared_error(y_train, y_train_pred, squared = False)
     R2 = r2_score(y_train, y_train_pred)
     return R2
+
+def get_classification_metrics(X, y, model):
+    y_pred = model.predict(X)
+    accuracy = accuracy_score(y, y_pred)
+    precision = precision_score(y, y_pred, average='macro')
+    recall = recall_score(y, y_pred, average='macro')
+    F1 = f1_score(y, y_pred, average='macro')
+    return accuracy, precision, recall, F1
+    
+
 
 def custom_tune_regression_model_hyperparameters(grid_dict, model_type=SGDRegressor):
     keys, values = zip(*grid_dict.items())
@@ -73,6 +87,8 @@ def save_model(model, parameters, metrics, folder):
     with open(metrics_fp, 'w') as file:
         json.dump(metrics, file)
 
+
+
 def tune_regression_model_hyperparameters(model, parameters):
     grid_search = GridSearchCV(estimator=model, param_grid=parameters, cv=2, refit=True)
     grid_search.fit(X_train, y_train)
@@ -83,7 +99,7 @@ def tune_regression_model_hyperparameters(model, parameters):
     best_score = grid_search.best_score_
 
     y_train_pred = best_model.predict(X_train)
-    metrics = get_metrics(y_train, y_train_pred)
+    metrics = get_regression_metrics(y_train, y_train_pred)
     
     model_name = type(model).__name__
     save_model(best_model, best_parameters, metrics, folder=(f'models/regression/{model_name}'))
@@ -109,7 +125,7 @@ def find_best_model():
     print(best_models)
     for best_model in best_models:
         y_test_pred = best_model.predict(X_test)
-        R2 = get_metrics(y_test, y_test_pred)
+        R2 = get_regression_metrics(y_test, y_test_pred)
         R2_scores.append(R2)
     print(R2_scores)
 
@@ -120,8 +136,7 @@ def find_best_model():
         # json.load(f'Data_Science_Airbnb/models/regression/{model_name}/hyperparameters.json')
         # json.load(f'Data_Science_Airbnb/models/regression/{model_name}/metrics.json')
 
-
-
+    return best_model
 
 
     
@@ -173,7 +188,7 @@ if __name__ == '__main__':
     X_test, X_validation, y_test, y_validation = train_test_split(X_test, y_test, test_size=0.5)
 
     best_models = []
-    find_best_model()
+    best_model = find_best_model()
 
 
 
