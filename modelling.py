@@ -153,8 +153,8 @@ def evaluate_all_classification_models():
 
 
 
-def evaluate_all_models(algorithm_type):
-    if algorithm_type == 'regression':
+def evaluate_all_models(task_folder):
+    if task_folder == 'models/regression':
         sgdr_parameters = {'loss': ['squared_error', 'huber', 'epsilon_insensitive'], 'alpha': [0.00005,0.0001, 0.0002,], 'max_iter': [1000, 1500, 2000]}
         dtr_parameters = {'criterion': ['squared_error', 'friedman_mse', 'absolute_error', 'poisson'], 'splitter': ['best', 'random'], 'max_depth': [None, 2, 5]}
         rfr_parameters = {'n_estimators': [1, 2, 4, 8, 16, 32, 64, 100, 200], 'criterion' : ['squared_error', 'absolute_error', 'friedman_mse', 'poisson'], 'max_depth': [1, 8, 16, 32, 64]}
@@ -166,7 +166,7 @@ def evaluate_all_models(algorithm_type):
             best_models.append(best_model)    
         return best_models
     
-    elif algorithm_type == 'classification':
+    elif task_folder == 'models/classification':
         LR_parameters = {'solver': ['lbfgs', 'newton-cg', 'newton-cholesky','saga'],'max_iter': [100, 200, 300],'verbose': [0, 1]}
         DT_clf_parameters = {'criterion': ['gini', 'entropy', 'log_loss'], 'splitter': ['best', 'random'],'max_depth': [1, 8, 16]}
         RF_clf_parameters = {'n_estimators': [100, 200, 300],'criterion': ['gini', 'entropy', 'log_loss'],'max_depth': [1, 8, 16], 'min_samples_split': [2, 4, 6],'oob_score': [True, False]}
@@ -185,7 +185,7 @@ def evaluate_all_models(algorithm_type):
     
 def find_best_model():
     R2_scores = []
-    best_models = evaluate_all_regression_models()
+    best_models = evaluate_all_models()
     print(best_models)
     for best_model in best_models:
         y_test_pred = best_model.predict(X_test)
@@ -257,7 +257,7 @@ if __name__ == '__main__':
     
 
     best_classification_models = []
-    evaluate_all_models('classification')
+    evaluate_all_models('folder/classification')
 
 
 
