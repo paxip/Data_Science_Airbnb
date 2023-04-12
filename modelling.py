@@ -63,13 +63,6 @@ def custom_tune_regression_model_hyperparameters(grid_dict, model_type=SGDRegres
                 performance_metrics = {'R2': best_validation_R2, 'RMSE' : validation_RMSE}
     return best_model, performance_metrics, best_iteration_parameters
 
-def regression_model_performance(model, data_sets):
-    y_validation_pred = model.predict(data_sets[4])
-    RMSE = mean_squared_error(data_sets[5], y_validation_pred, squared=False)
-    MAE = mean_absolute_error(data_sets[5], y_validation_pred)
-    R2 = r2_score(data_sets[5], y_validation_pred)
-    return RMSE, MAE, R2
-
 def save_model(model, parameters, metrics, folder):
     os.makedirs(folder)
     filepaths = []
@@ -87,12 +80,21 @@ def save_model(model, parameters, metrics, folder):
     with open(metrics_fp, 'w') as file:
         json.dump(metrics, file)
 
+def tune_classification_model_hyperparameters(model, parameters):
+    grid_search = GridSearchCV(estimator=model, param_grid=parameters, cv=2, refit=True)
+    grid_search.fit(X_train, y_train)
 
+    best_model = grid_search.best_estimator_
+    best_parameters = grid_search.best_params_
+    best_score = grid_search.best_score_
+
+    y_train_pred = best_model.predict(X_train)
+    metrics = get_classification_metrics(y_train, y_train_pred, model)
+    print(best_model, metrics)
 
 def tune_regression_model_hyperparameters(model, parameters):
     grid_search = GridSearchCV(estimator=model, param_grid=parameters, cv=2, refit=True)
     grid_search.fit(X_train, y_train)
-    
     
     best_model = grid_search.best_estimator_
     best_parameters = grid_search.best_params_
@@ -187,8 +189,19 @@ if __name__ == '__main__':
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
     X_test, X_validation, y_test, y_validation = train_test_split(X_test, y_test, test_size=0.5)
 
-    best_models = []
-    best_model = find_best_model()
+    model = SGDRegressor()
+
+    parameters = {'learning_rate': ['constant', 'optimal', 'invscaling', 'adaptive'], 
+                'max_iter': [500, 1000, 1500, 2000, 2500, 3000], 
+                'loss': ['squared_error', 'huber', 'epsilon_insensitive', 'squared_epsilon_insensitive'], 
+                'fit_intercept' : [True, False], 
+                'alpha': [0.00005,0.0001, 0.00015, 0.0002]}
+    
+    tune_classification_model_hyperparameters(model, parameters)
+
+
+    # best_models = []
+    # best_model = find_best_model()
 
 
 
