@@ -1,1 +1,1 @@
-{"criterion": "entropy", "max_depth": 8, "splitter": "best"}
+{"criterion": "gini", "max_depth": 8, "splitter": "random"}

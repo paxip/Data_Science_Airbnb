@@ -1,1 +1,1 @@
-{"max_iter": 100, "solver": "lbfgs", "verbose": 0}
+{"max_iter": 100, "solver": "newton-cholesky", "verbose": 0}
