@@ -167,20 +167,23 @@ def find_best_model(task_folder):
     model_name = type(best_model).__name__ 
     path = (f'/Users/apple/Documents/GitHub/Data_Science_Airbnb/{task_folder}/{model_name}')
     os.chdir(path)
+    
+    load_model_files()
 
+    
+
+def load_model_files():
     load_model = joblib.load('model.joblib')
-    load_params = json.loads('hyperparameters.json')
-    load_metrics = json.loads('metrics.json')
+    with open('hyperparameters.json') as f:
+        load_params = json.load(f)
+    with open('metrics.json') as f:
+        load_metrics = json.load(f)
 
     return load_model, load_params, load_metrics
-    
-       
-    # with open (f'/Users/apple/Documents/GitHub/Data_Science_Airbnb/{task_folder}/{model_name}', 'r') as fp:
-    #     model = joblib.load((f'Data_Science_Airbnb/{task_folder}/{model_name}/model.joblib'))
-    #     parameters = json.load(f'Data_Science_Airbnb/{task_folder}/{model_name}/hyperparameters.json')
-    #     metrics = json.load(f'Data_Science_Airbnb/{task_folder}/{model_name}/metrics.json')
 
-    # return model, parameters, metrics
+
+       
+  
 
 
 
@@ -233,6 +236,7 @@ if __name__ == '__main__':
 
     
     find_best_model('models/classification')
+    
 
 
 

@@ -1,1 +1,1 @@
-{"criterion": "entropy", "max_depth": 8, "splitter": "random"}
+{"criterion": "log_loss", "max_depth": 8, "splitter": "random"}

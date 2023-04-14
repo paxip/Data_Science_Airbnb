@@ -1,1 +1,1 @@
-{"criterion": "squared_error", "learning_rate": 0.1, "n_estimators": 16}
+{"criterion": "friedman_mse", "learning_rate": 0.5, "n_estimators": 16}
