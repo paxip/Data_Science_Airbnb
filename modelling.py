@@ -73,9 +73,9 @@ def save_model(model, parameters, metrics, folder):
         json.dump(metrics, file)
 
 def get_regression_metrics(y_train, y_train_pred):
-    # RMSE = mean_squared_error(y_train, y_train_pred, squared = False)
     R2 = r2_score(y_train, y_train_pred)
-    return R2
+    R2_scores = {'R2_score': R2}
+    return R2_scores
 
 def get_classification_metrics(X, y, model):
     y_pred = model.predict(X)
@@ -123,8 +123,8 @@ def evaluate_all_models(task_folder):
         models_parameters = {SGDRegressor(): sgdr_parameters, DecisionTreeRegressor(): dtr_parameters, RandomForestRegressor(): rfr_parameters, GradientBoostingRegressor(): gbr_parameters}
         for model, parameters in models_parameters.items():
             best_model = tune_regression_model_hyperparameters(model, parameters)
-            best_models.append(best_model)    
-        return best_models
+            best_regression_models.append(best_model)    
+        return best_regression_models
     
     elif task_folder == 'models/classification':
         LR_parameters = {'solver': ['lbfgs', 'newton-cg', 'newton-cholesky','saga'],'max_iter': [100, 200, 300],'verbose': [0, 1]}
@@ -142,56 +142,50 @@ def evaluate_all_models(task_folder):
     
 def find_best_model(task_folder):
     if task_folder == 'models/regression':
-        R2_scores = []
-        best_models = evaluate_all_models()
-        print(best_models)
-        for best_model in best_models:
+        
+        best_regression_models = evaluate_all_models()
+        for best_model in best_regression_models:
             y_test_pred = best_model.predict(X_test)
-            R2 = get_regression_metrics(y_test, y_test_pred)
-            R2_scores.append(R2)
-        print(R2_scores)
+            scores = get_regression_metrics(y_test, y_test_pred)
+            R2 = scores.get('R2_score')
+            print(R2)
 
         if R2 <= 1:
             print(f'The best_model is {best_model} with an R2 score of {R2}')
-            model_name = type(best_model).__name__
-            # joblib.load((f'Data_Science_Airbnb/models/regression/{model_name}/model.joblib'))
-            # json.load(f'Data_Science_Airbnb/models/regression/{model_name}/hyperparameters.json')
-            # json.load(f'Data_Science_Airbnb/models/regression/{model_name}/metrics.json')
 
-        return best_model
-    
     elif task_folder == 'models/classification':
         best_classification_models = evaluate_all_models('models/classification')
         print(best_classification_models)
         for best_model in best_classification_models:
-            y_train_pred = best_model.predict(X_train)
-            scores = get_classification_metrics(X_train, y_train_pred, best_model)
-            print(scores)
-            # accuracy = scores.get('accuracy')
-            # print(accuracy)
+            scores = get_classification_metrics(X_test, y_test, best_model)
+            accuracy = scores.get('accuracy')
+            print(accuracy)
             
+        if accuracy <= 1:
+            print(f'The best_model is {best_model} with an accuracy score of {accuracy}')
 
+    model_name = type(best_model).__name__ 
+    path = (f'/Users/apple/Documents/GitHub/Data_Science_Airbnb/{task_folder}/{model_name}')
+    os.chdir(path)
+
+    load_model = joblib.load('model.joblib')
+    load_params = json.loads('hyperparameters.json')
+    load_metrics = json.loads('metrics.json')
+
+    return load_model, load_params, load_metrics
+    
+       
+    # with open (f'/Users/apple/Documents/GitHub/Data_Science_Airbnb/{task_folder}/{model_name}', 'r') as fp:
+    #     model = joblib.load((f'Data_Science_Airbnb/{task_folder}/{model_name}/model.joblib'))
+    #     parameters = json.load(f'Data_Science_Airbnb/{task_folder}/{model_name}/hyperparameters.json')
+    #     metrics = json.load(f'Data_Science_Airbnb/{task_folder}/{model_name}/metrics.json')
+
+    # return model, parameters, metrics
 
 
 
 
             
-            # score = json.loads(f'Data_Science_Airbnb/{task_folder}/{model_name}/metrics.json')
-            # print(score)
-
-          
-
-
-
-
-
-
-    
-
-
-
-    
-
 
 if __name__ == '__main__':
     # airbnb_df = pd.read_csv('/Users/apple/Documents/GitHub/Data_Science_Airbnb/airbnb_datasets/clean_tabular_data.csv')
@@ -202,7 +196,7 @@ if __name__ == '__main__':
     # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
     # X_test, X_validation, y_test, y_validation = train_test_split(X_test, y_test, test_size=0.5)
     
-    best_models = []
+    best_regression_models = []
     # find_best_model()
    
 
@@ -233,23 +227,14 @@ if __name__ == '__main__':
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
     X_test, X_validation, y_test, y_validation = train_test_split(X_test, y_test, test_size=0.5)
-
-    # model = LogisticRegression()
-    
-    # best_model, best_parameters, metrics = tune_classification_model_hyperparameters(model, parameters)
-    # model_name = type(model).__name__
-    # save_model(best_model, best_parameters, metrics, folder=(f'models/classification/{model_name}'))
     
 
     best_classification_models = []
-    # evaluate_all_models('folder/classification')
+
     
     find_best_model('models/classification')
 
 
-
-    # best_models = []
-    # best_model = find_best_model()
 
 
 
