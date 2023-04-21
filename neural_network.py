@@ -6,7 +6,7 @@ import pandas as pd
 from tabular_data import Data_Preparation
 
 from torch.utils.data import DataLoader, Dataset, random_split
-
+from torch.utils.tensorboard import SummaryWriter
 
 
 class AirbnbNightlyPriceRegressionDataset(Dataset):
@@ -54,6 +54,10 @@ if __name__ == '__main__':
 
         optimiser = torch.optim.SGD(model.parameters(), lr=0.0001, weight_decay=0.001, momentum=0.07)
 
+        writer = SummaryWriter()
+
+        batch_index = 0
+
         for epoch in range(epochs):
             for batch in train_loader:
                 X, y = batch
@@ -66,6 +70,8 @@ if __name__ == '__main__':
                 print(f'Train loss is {loss.item()}')
                 optimiser.step()
                 optimiser.zero_grad()
+                writer.add_scalar('loss', loss.item(), batch_index)
+                batch_index += 1
                 
             for batch in validation_loader:
                 X, y = batch
