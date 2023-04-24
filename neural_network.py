@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import pandas as pd
 
 from tabular_data import Data_Preparation
-
+from torchmetrics import R2Score
 from torch.utils.data import DataLoader, Dataset, random_split
 from torch.utils.tensorboard import SummaryWriter
 
@@ -52,7 +52,7 @@ if __name__ == '__main__':
 
     def train(model, epochs=10):
 
-        optimiser = torch.optim.SGD(model.parameters(), lr=0.0001, weight_decay=0.001, momentum=0.07)
+        optimiser = torch.optim.SGD(model.parameters(), lr=0.0001, weight_decay=0.01, momentum=0.1)
 
         writer = SummaryWriter()
 
@@ -65,13 +65,16 @@ if __name__ == '__main__':
                 y = y.to(torch.float32)
                 y = torch.unsqueeze(y, 1)
                 y_prediction = model(X)
-                loss = F.mse_loss(y_prediction, y)
-                loss.backward()
-                print(f'Train loss is {loss.item()}')
+                train_loss = F.mse_loss(y_prediction, y)
+                train_loss.backward()
+                print(f'Train loss is {train_loss.item()}')
+                R2_train = R2Score()
+                R2_train = R2_train(y_prediction, y)
                 optimiser.step()
                 optimiser.zero_grad()
-                writer.add_scalar('loss', loss.item(), batch_index)
-                batch_index += 1
+                writer.add_scalar('train loss', train_loss.item(), batch_index)
+                writer.add_scalar('train accuracy', R2_train, batch_index)       
+                    
                 
             for batch in validation_loader:
                 X, y = batch
@@ -79,20 +82,21 @@ if __name__ == '__main__':
                 y = y.to(torch.float32)
                 y = torch.unsqueeze(y, 1)
                 y_validation = model(X)
-                loss = F.mse_loss(y_validation, y)
-                loss.backward()
-                print(f'Validation loss is {loss.item()}')
+                validation_loss = F.mse_loss(y_validation, y)
+                validation_loss.backward()
+                print(f'Validation loss is {validation_loss.item()}')
+                R2_validation = R2Score()
+                R2_validation = R2_validation(y_validation, y)
                 optimiser.step()
                 optimiser.zero_grad()
+                writer.add_scalar('validation loss', validation_loss.item(), batch_index)
+                writer.add_scalar('validation accuracy', R2_validation, batch_index)
 
-            
-
+                batch_index += 1
+                
     train(model)
 
-    # Complete the training loop so that it iterates through ever batch.
-    # Optimise model parameters.
-    # Evaluate model performance on the validation dataset after each epoch.
-
+    
 
    
 
