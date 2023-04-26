@@ -2,7 +2,9 @@
 import torch
 import torch.nn.functional as F
 import pandas as pd
+import yaml
 
+from collections import OrderedDict as OrderedDict
 from tabular_data import Data_Preparation
 from torchmetrics import R2Score
 from torch.utils.data import DataLoader, Dataset, random_split
@@ -24,15 +26,43 @@ class AirbnbNightlyPriceRegressionDataset(Dataset):
 
 
 
-class AirbnbNightlyPriceRegressionModel(torch.nn.Module):
-    def __init__(self) -> None:
+class NN(torch.nn.Module):
+    def __init__(self, config):
         super().__init__()
-        self.linear_layer = torch.nn.Linear(9, 1)
+        hidden_layer_width = config['hidden_layer_width']
+        depth = config['depth']
+        print(hidden_layer_width)
+        print(depth)
+        input_nodes = 9
+        output_nodes = 1
+        self.linear_layers = []
+        self.input_layer = torch.nn.Linear(input_nodes, hidden_layer_width)
+        
+        for hidden_layer in range(depth -1):
+            self.linear_layers.append(torch.nn.Sequential(torch.nn.Linear(hidden_layer_width, hidden_layer_width)))
+            self.linear_layers.append(torch.nn.ReLU())
+        
+        self.linear_layers = torch.nn.Sequential(*self.linear_layers)
+        # print(self.linear_layers)
+
+        self.output_layer = torch.nn.Linear(hidden_layer_width, output_nodes)
         
 
     def forward(self, X):
-        #  use the layers to process the features.
-        return self.linear_layer(X)
+        X = self.input_layer(X)
+        X = self.linear_layers(X)
+        X = self.output_layer(X)
+        print(X)
+        return X
+
+
+
+
+
+  
+
+
+
     
 
 
@@ -47,8 +77,8 @@ if __name__ == '__main__':
 
     # batch = next(iter(train_loader))
 
-    model = AirbnbNightlyPriceRegressionModel()
-    # print(model(X))
+   
+
 
     def train(model, epochs=10):
 
@@ -94,11 +124,24 @@ if __name__ == '__main__':
 
                 batch_index += 1
                 
-    train(model)
+    # train(model)
 
-    
+    def get_nn_config():
+        with open('/Users/apple/Documents/GitHub/Data_Science_Airbnb/nn_config.yaml', 'r') as stream:
+            try:
+                config =yaml.safe_load(stream)
+                print(config)
+            except yaml.YAMLError as e:
+                print(e)
 
-   
+        return config
+
+    model = NN(get_nn_config())
+    model
+     
 
 
-    
+    # get_nn_config()
+
+
+

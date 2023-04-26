@@ -1,0 +1,33 @@
+---
+optimiser: SGD
+learning rate: 0.001
+weight decay: 0.01
+momentum: 0.1
+hidden_layer_width: 5
+depth: 5
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
