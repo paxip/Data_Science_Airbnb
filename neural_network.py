@@ -1,4 +1,5 @@
-
+import datetime
+import os
 import torch
 import torch.nn.functional as F
 import pandas as pd
@@ -59,7 +60,8 @@ def train(model, config, epochs=10):
     if config['optimiser'] == 'SGD':
         optimiser = torch.optim.SGD(model.parameters(), lr=config['learning rate'], weight_decay=config['weight decay'], momentum=config['momentum'])
         writer = SummaryWriter()
-        batch_index = 0
+        batch_index_1 = 0
+        batch_index_2 = 0
 
     for epoch in range(epochs):
         for batch in train_loader:
@@ -68,15 +70,16 @@ def train(model, config, epochs=10):
             y = y.to(torch.float32)
             y = torch.unsqueeze(y, 1)
             y_prediction = model(X)
-            train_loss = F.mse_loss(y_prediction, y)
-            train_loss.backward()
-            print(f'Train loss is {train_loss.item()}')
+            loss = F.mse_loss(y_prediction, y) 
             R2_train = R2Score()
             R2_train = R2_train(y_prediction, y)
+            RMSE_train = torch.sqrt(loss)
+            loss.backward()
             optimiser.step()
             optimiser.zero_grad()
-            writer.add_scalar('train loss', train_loss.item(), batch_index)
-            writer.add_scalar('train accuracy', R2_train, batch_index)       
+            writer.add_scalar('train loss', loss.item(), batch_index_1)
+            writer.add_scalar('train accuracy', R2_train, batch_index_1)  
+            batch_index_1 += 1    
                     
         for batch in validation_loader:
             X, y = batch
@@ -84,17 +87,15 @@ def train(model, config, epochs=10):
             y = y.to(torch.float32)
             y = torch.unsqueeze(y, 1)
             y_validation = model(X)
-            validation_loss = F.mse_loss(y_validation, y)
-            validation_loss.backward()
-            print(f'Validation loss is {validation_loss.item()}')
+            loss_validation = F.mse_loss(y_validation, y)
             R2_validation = R2Score()
             R2_validation = R2_validation(y_validation, y)
-            optimiser.step()
-            optimiser.zero_grad()
-            writer.add_scalar('validation loss', validation_loss.item(), batch_index)
-            writer.add_scalar('validation accuracy', R2_validation, batch_index)
+            RMSE_validation = torch.sqrt(loss_validation)
+            writer.add_scalar('validation loss', loss_validation.item(), batch_index_2)
+            writer.add_scalar('validation accuracy', R2_validation, batch_index_2)
+            batch_index_2 += 1
 
-            batch_index += 1
+    return R2_train, RMSE_train, R2_validation, RMSE_validation
 
 def get_nn_config():
     with open('/Users/apple/Documents/GitHub/Data_Science_Airbnb/nn_config.yaml', 'r') as stream:
@@ -102,11 +103,49 @@ def get_nn_config():
             config =yaml.safe_load(stream)
             print(config)
         except yaml.YAMLError as e:
-            print(e)
-        
+            print(e)   
         return config
 
+def save_model(folder):
+    if not isinstance(model, torch.nn.Module):
+        print('This model is not a Pytorch module.')
+    
+    else:
+        os.makedirs(folder, exist_ok=True)
+        path = folder
+        file_name = 'model.pt'
+        with open(os.path.join(path, file_name), 'w') as fp:
 
+#   Check if model is pytorch model.
+#   If yes, save torch model in a file called model.pt - use video for this part.
+#   save hyperparameters in json file.
+#   Calculate RMSE loss and R2 score for training, test and validation.
+#   Time taken to train the model under a key called training_duration.
+#   Time taken to make a prediction under a key called inference_latency.
+
+
+
+
+
+
+def save_model(model, parameters, metrics, folder):
+    os.makedirs(folder, exist_ok=True)
+    filepaths = []
+    filenames = ['model.joblib','hyperparameters.json', 'metrics.json']
+    for file in filenames:
+        filepath = os.path.join(folder, file)
+        filepaths.append(filepath)
+    model_fp, hyperparams_fp, metrics_fp = filepaths
+    
+    joblib.dump(model, model_fp)
+    
+    with open(hyperparams_fp, 'w') as file:
+        json.dump(parameters, file)
+
+    with open(metrics_fp, 'w') as file:
+        json.dump(metrics, file)
+
+    
   
 if __name__ == '__main__':
     dataset = AirbnbNightlyPriceRegressionDataset()
@@ -138,4 +177,37 @@ if __name__ == '__main__':
 
 
 
+# for epoch in range(epochs):
+#         for batch in train_loader:
+#             X, y = batch
+#             X = X.to(torch.float32)
+#             y = y.to(torch.float32)
+#             y = torch.unsqueeze(y, 1)
+#             y_prediction = model(X)
+#             train_loss = F.mse_loss(y_prediction, y)
+#             train_loss.backward()
+#             print(f'Train loss is {train_loss.item()}')
+#             R2_train = R2Score()
+#             R2_train = R2_train(y_prediction, y)
+#             optimiser.step()
+#             optimiser.zero_grad()
+#             writer.add_scalar('train loss', train_loss.item(), batch_index)
+#             writer.add_scalar('train accuracy', R2_train, batch_index)       
+                    
+#         for batch in validation_loader:
+#             X, y = batch
+#             X = X.to(torch.float32)
+#             y = y.to(torch.float32)
+#             y = torch.unsqueeze(y, 1)
+#             y_validation = model(X)
+#             validation_loss = F.mse_loss(y_validation, y)
+#             validation_loss.backward()
+#             print(f'Validation loss is {validation_loss.item()}')
+#             R2_validation = R2Score()
+#             R2_validation = R2_validation(y_validation, y)
+#             optimiser.step()
+#             optimiser.zero_grad()
+#             writer.add_scalar('validation loss', validation_loss.item(), batch_index)
+#             writer.add_scalar('validation accuracy', R2_validation, batch_index)
 
+#             batch_index += 1
