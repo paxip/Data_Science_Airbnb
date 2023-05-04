@@ -1,5 +1,6 @@
 import datetime
 import os
+import time
 import torch
 import torch.nn.functional as F
 import pandas as pd
@@ -62,6 +63,9 @@ def train(model, config, epochs=10):
         writer = SummaryWriter()
         batch_index_1 = 0
         batch_index_2 = 0
+    
+    training_start_time = time.time()
+    prediction_times = []
 
     for epoch in range(epochs):
         for batch in train_loader:
@@ -69,7 +73,11 @@ def train(model, config, epochs=10):
             X = X.to(torch.float32)
             y = y.to(torch.float32)
             y = torch.unsqueeze(y, 1)
+            prediction_start_time = time.time()
             y_prediction = model(X)
+            prediction_end_time = time.time()
+            prediction_duration = prediction_end_time - prediction_start_time
+            prediction_times.append(prediction_duration)
             loss = F.mse_loss(y_prediction, y) 
             R2_train = R2Score()
             R2_train = R2_train(y_prediction, y)
@@ -79,7 +87,9 @@ def train(model, config, epochs=10):
             optimiser.zero_grad()
             writer.add_scalar('train loss', loss.item(), batch_index_1)
             writer.add_scalar('train accuracy', R2_train, batch_index_1)  
-            batch_index_1 += 1    
+            batch_index_1 += 1   
+
+        training_end_time = time.time() 
                     
         for batch in validation_loader:
             X, y = batch
@@ -94,8 +104,11 @@ def train(model, config, epochs=10):
             writer.add_scalar('validation loss', loss_validation.item(), batch_index_2)
             writer.add_scalar('validation accuracy', R2_validation, batch_index_2)
             batch_index_2 += 1
+    
+    training_duration = training_end_time - training_start_time
+    inference_latency = sum(prediction_times)/len(prediction_times)
 
-    return R2_train, RMSE_train, R2_validation, RMSE_validation
+    return R2_train, RMSE_train, R2_validation, RMSE_validation, training_duration, inference_latency
 
 def get_nn_config():
     with open('/Users/apple/Documents/GitHub/Data_Science_Airbnb/nn_config.yaml', 'r') as stream:
