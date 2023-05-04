@@ -1,4 +1,5 @@
-import datetime
+
+import json
 import os
 import time
 import torch
@@ -7,6 +8,7 @@ import pandas as pd
 import yaml
 
 from collections import OrderedDict as OrderedDict
+from datetime import datetime
 from tabular_data import Data_Preparation
 from torchmetrics import R2Score
 from torch.utils.data import DataLoader, Dataset, random_split
@@ -119,22 +121,43 @@ def get_nn_config():
             print(e)   
         return config
 
-def save_model(folder):
+def get_metrics():
+    R2_train, RMSE_train, R2_validation, RMSE_validation, training_duration, inference_latency = train(model, config)
+    performance_metrics = {'R2_train': R2_train, 'RMSE_train': RMSE_train, 'R2_validation': R2_validation, 'RMSE_validation': RMSE_validation, 'training duration': training_duration, 'inference_latency': inference_latency}
+    return performance_metrics
+
+
+def save_model():
     if not isinstance(model, torch.nn.Module):
         print('This model is not a Pytorch module.')
     
     else:
-        os.makedirs(folder, exist_ok=True)
-        path = folder
-        file_name = 'model.pt'
-        with open(os.path.join(path, file_name), 'w') as fp:
+        folder = os.path.join('Data_Science_Airbnb/neural_networks/regression', datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+        try:
+            os.makedirs(folder)
+        except OSError as e:
+            print(e)
 
-#   Check if model is pytorch model.
-#   If yes, save torch model in a file called model.pt - use video for this part.
+        file_name = 'model.pt'
+        filepath = os.path.join(folder, file_name)
+        state_dictionary = model.state_dict()
+        torch.save(state_dictionary, filepath)
+
+        with open(f"{folder}/metrics.json", 'w') as fp:
+            json.dump(performance_metrics, fp)  
+
+        with open(f"{folder}/hyperparameters.json", 'w') as fp:
+            json.dump(config, fp)  
+
+
+        
+
+
+
+
 #   save hyperparameters in json file.
 #   Calculate RMSE loss and R2 score for training, test and validation.
-#   Time taken to train the model under a key called training_duration.
-#   Time taken to make a prediction under a key called inference_latency.
+
 
 
 
@@ -170,7 +193,7 @@ if __name__ == '__main__':
 
     config = get_nn_config()
     model = NN(config)
-    train(model, config)
+    # train(model, config)
 
  
     
