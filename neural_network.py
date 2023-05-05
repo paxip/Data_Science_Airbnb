@@ -61,12 +61,17 @@ class NN(torch.nn.Module):
 def train(model, config, epochs=10):
 
     if config['optimiser'] == 'SGD':
-        optimiser = torch.optim.SGD(model.parameters(), lr=config['learning rate'], weight_decay=config['weight decay'], momentum=config['momentum'])
+        optimiser = torch.optim.SGD(model.parameters(), lr=config['learning_rate'], weight_decay=config['weight decay'], momentum=config['momentum'])
+
+    elif config['optimiser'] == 'Adam':
+        optimiser = torch.optim.Adam(model.parameters(), lr=config['learning_rate'], amsgrad=config['amsgrad'])
     
-    
-        writer = SummaryWriter()
-        batch_index_1 = 0
-        batch_index_2 = 0
+    elif config['optimiser'] == 'Adadelta':
+        optimiser = torch.optim.Adadelta(model.parameters(), lr=config['learning_rate'], rho=config['rho'])
+
+    writer = SummaryWriter()
+    batch_index_1 = 0
+    batch_index_2 = 0
     
     training_start_time = time.time()
     prediction_times = []
@@ -122,13 +127,13 @@ def get_nn_config():
             print(e)
         return config
 
-def get_metrics():
+def get_metrics(model, config):
     R2_train, RMSE_train, R2_validation, RMSE_validation, training_duration, inference_latency = train(model, config)
     performance_metrics = {'R2_train': R2_train, 'RMSE_train': RMSE_train, 'R2_validation': R2_validation, 'RMSE_validation': RMSE_validation, 'training duration': training_duration, 'inference_latency': inference_latency}
     return performance_metrics
 
 
-def save_model():
+def save_model(model, performance_metrics, config):
     if not isinstance(model, torch.nn.Module):
         print('This model is not a Pytorch module.')
     
@@ -152,9 +157,9 @@ def save_model():
 
 
 def generate_nn_configs():
-    Adam_hyperparameters = {'optimiser': ['Adam'], 'learning_rate': [0.001, 0.0001], 'amsgrad': [True, False], 'hidden layer width': [5], 'depth': [3] }
-    Adadelta_hyperparameters = {'optimiser': ['Adadelta'], 'learning_rate': [1.0, 0.001, 0.0001], 'maximise': [True, False], 'hidden layer width': [5], 'depth': [3]}
-    SGD_hyperparameters = {'optimiser': ['SGD'], 'learning_rate': [1.0, 0.001, 0.0001], 'weight decay': [0.01, 0.02], 'momentum': [0.1], 'hidden layer width': [5], 'depth': [3]}
+    Adam_hyperparameters = {'optimiser': ['Adam'], 'learning_rate': [0.001, 0.0001], 'amsgrad': [True, False], 'hidden_layer_width': [5], 'depth': [3]}
+    Adadelta_hyperparameters = {'optimiser': ['Adadelta'], 'learning_rate': [1.0, 0.001, 0.0001], 'rho': [0.3, 0.9], 'hidden_layer_width': [5], 'depth': [3]}
+    SGD_hyperparameters = {'optimiser': ['SGD'], 'learning_rate': [1.0, 0.001, 0.0001], 'weight decay': [0.01, 0.02], 'momentum': [0.1], 'hidden_layer_width': [5], 'depth': [3]}
 
     optimiser_list = [Adam_hyperparameters, Adadelta_hyperparameters, SGD_hyperparameters]
     nn_configs = []
@@ -178,6 +183,9 @@ def find_best_nn():
     get_nn_config()
     for nn_config in nn_configs:
         for config in nn_config:
+            model = NN(config)
+            train(model, config)
+
 
         
    
@@ -200,15 +208,14 @@ def find_best_nn():
    
   
 if __name__ == '__main__':
-    # dataset = AirbnbNightlyPriceRegressionDataset()
-    # train_set, test_set, validation_set = random_split(dataset, [0.7, 0.15, 0.15])
-    # batch_size = 4
-    # train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
-    # validation_loader = DataLoader(validation_set, batch_size=batch_size, shuffle=True)
-    # test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=True)
+    dataset = AirbnbNightlyPriceRegressionDataset()
+    train_set, test_set, validation_set = random_split(dataset, [0.7, 0.15, 0.15])
+    batch_size = 4
+    train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
+    validation_loader = DataLoader(validation_set, batch_size=batch_size, shuffle=True)
+    test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=True)
 
-    # config = get_nn_config()
-    # model = NN(config)
+   
     # # train(model, config)
 
     find_best_nn()

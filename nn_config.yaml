@@ -1,86 +1,86 @@
 - - optimiser: Adam
     learning_rate: 0.001
     amsgrad: true
-    hidden layer width: 5
+    hidden_layer_width: 5
     depth: 3
   - optimiser: Adam
     learning_rate: 0.001
     amsgrad: false
-    hidden layer width: 5
+    hidden_layer_width: 5
     depth: 3
   - optimiser: Adam
     learning_rate: 0.0001
     amsgrad: true
-    hidden layer width: 5
+    hidden_layer_width: 5
     depth: 3
   - optimiser: Adam
     learning_rate: 0.0001
     amsgrad: false
-    hidden layer width: 5
+    hidden_layer_width: 5
     depth: 3
 - - optimiser: Adadelta
     learning_rate: 1.0
-    maximise: true
-    hidden layer width: 5
+    rho: 0.3
+    hidden_layer_width: 5
     depth: 3
   - optimiser: Adadelta
     learning_rate: 1.0
-    maximise: false
-    hidden layer width: 5
+    rho: 0.9
+    hidden_layer_width: 5
     depth: 3
   - optimiser: Adadelta
     learning_rate: 0.001
-    maximise: true
-    hidden layer width: 5
+    rho: 0.3
+    hidden_layer_width: 5
     depth: 3
   - optimiser: Adadelta
     learning_rate: 0.001
-    maximise: false
-    hidden layer width: 5
+    rho: 0.9
+    hidden_layer_width: 5
     depth: 3
   - optimiser: Adadelta
     learning_rate: 0.0001
-    maximise: true
-    hidden layer width: 5
+    rho: 0.3
+    hidden_layer_width: 5
     depth: 3
   - optimiser: Adadelta
     learning_rate: 0.0001
-    maximise: false
-    hidden layer width: 5
+    rho: 0.9
+    hidden_layer_width: 5
     depth: 3
 - - optimiser: SGD
     learning_rate: 1.0
     weight decay: 0.01
     momentum: 0.1
-    hidden layer width: 5
+    hidden_layer_width: 5
     depth: 3
   - optimiser: SGD
     learning_rate: 1.0
     weight decay: 0.02
     momentum: 0.1
-    hidden layer width: 5
+    hidden_layer_width: 5
     depth: 3
   - optimiser: SGD
     learning_rate: 0.001
     weight decay: 0.01
     momentum: 0.1
-    hidden layer width: 5
+    hidden_layer_width: 5
     depth: 3
   - optimiser: SGD
     learning_rate: 0.001
     weight decay: 0.02
     momentum: 0.1
-    hidden layer width: 5
+    hidden_layer_width: 5
     depth: 3
   - optimiser: SGD
     learning_rate: 0.0001
     weight decay: 0.01
     momentum: 0.1
-    hidden layer width: 5
+    hidden_layer_width: 5
     depth: 3
   - optimiser: SGD
     learning_rate: 0.0001
     weight decay: 0.02
     momentum: 0.1
-    hidden layer width: 5
+    hidden_layer_width: 5
     depth: 3
