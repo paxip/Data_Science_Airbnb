@@ -94,12 +94,13 @@ def train(model, config, epochs=10):
             loss.backward()
             optimiser.step()
             optimiser.zero_grad()
-            writer.add_scalar('train loss', loss.item(), batch_index_1)
-            writer.add_scalar('train accuracy', R2_train, batch_index_1)  
+            # writer.add_scalar('train loss', loss.item(), batch_index_1)
+            # writer.add_scalar('train accuracy', R2_train, batch_index_1)  
             batch_index_1 += 1   
 
         training_end_time = time.time() 
-                    
+
+    with torch.no_grad():
         for batch in validation_loader:
             X, y = batch
             X = X.to(torch.float32)
@@ -110,8 +111,8 @@ def train(model, config, epochs=10):
             R2_validation = R2Score()
             R2_validation = R2_validation(y_validation, y)
             RMSE_validation = torch.sqrt(loss_validation)
-            writer.add_scalar('validation loss', loss_validation.item(), batch_index_2)
-            writer.add_scalar('validation accuracy', R2_validation, batch_index_2)
+            # writer.add_scalar('validation loss', loss_validation.item(), batch_index_2)
+            # writer.add_scalar('validation accuracy', R2_validation, batch_index_2)
             batch_index_2 += 1
     
     training_duration = training_end_time - training_start_time
@@ -129,7 +130,7 @@ def get_nn_config():
 
 def get_metrics(model, config):
     R2_train, RMSE_train, R2_validation, RMSE_validation, training_duration, inference_latency = train(model, config)
-    performance_metrics = {'R2_train': R2_train, 'RMSE_train': RMSE_train, 'R2_validation': R2_validation, 'RMSE_validation': RMSE_validation, 'training duration': training_duration, 'inference_latency': inference_latency}
+    performance_metrics = {'R2_train': R2_train.item(), 'RMSE_train': RMSE_train, 'R2_validation': R2_validation.item(), 'RMSE_validation': RMSE_validation, 'training duration': training_duration, 'inference_latency': inference_latency}
     return performance_metrics
 
 
@@ -179,18 +180,41 @@ def convert_all_params_to_yaml(nn_configs, yaml_file):
 
 def find_best_nn():
     nn_configs = generate_nn_configs()
+    R2_list = []
     convert_all_params_to_yaml(nn_configs, '/Users/apple/Documents/GitHub/Data_Science_Airbnb/nn_config.yaml')
     get_nn_config()
     for nn_config in nn_configs:
         for config in nn_config:
             model = NN(config)
-            train(model, config)
+            trained_model = train(model, config)
+            performance_metrics = get_metrics(model, config)
+            R2 = performance_metrics['R2_validation']
+            R2_list.append(R2)
 
-
+    
+    print(R2_list)
+    for R2 in R2_list:
+        if R2 <= min(R2_list):
+        best_model = trained_model
+        save_model(best_model, performance_metrics, config)
         
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Save R2 value and    
    
-    # Calls generate_nn_config() function.
-    # Pass each config through train loop.
+
     #  Save config used in the hyperparameters.json file for each model trained.
     # Save best model in a folder.(call save model)
     #  Return model, metrics, hyperparameters. 
