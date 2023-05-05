@@ -1,4 +1,4 @@
-
+import itertools
 import json
 import os
 import time
@@ -62,6 +62,8 @@ def train(model, config, epochs=10):
 
     if config['optimiser'] == 'SGD':
         optimiser = torch.optim.SGD(model.parameters(), lr=config['learning rate'], weight_decay=config['weight decay'], momentum=config['momentum'])
+    
+    
         writer = SummaryWriter()
         batch_index_1 = 0
         batch_index_2 = 0
@@ -116,9 +118,8 @@ def get_nn_config():
     with open('/Users/apple/Documents/GitHub/Data_Science_Airbnb/nn_config.yaml', 'r') as stream:
         try:
             config =yaml.safe_load(stream)
-            print(config)
         except yaml.YAMLError as e:
-            print(e)   
+            print(e)
         return config
 
 def get_metrics():
@@ -150,6 +151,44 @@ def save_model():
             json.dump(config, fp)  
 
 
+def generate_nn_configs():
+    Adam_hyperparameters = {'optimiser': ['Adam'], 'learning_rate': [0.001, 0.0001], 'amsgrad': [True, False], 'hidden layer width': [5], 'depth': [3] }
+    Adadelta_hyperparameters = {'optimiser': ['Adadelta'], 'learning_rate': [1.0, 0.001, 0.0001], 'maximise': [True, False], 'hidden layer width': [5], 'depth': [3]}
+    SGD_hyperparameters = {'optimiser': ['SGD'], 'learning_rate': [1.0, 0.001, 0.0001], 'weight decay': [0.01, 0.02], 'momentum': [0.1], 'hidden layer width': [5], 'depth': [3]}
+
+    optimiser_list = [Adam_hyperparameters, Adadelta_hyperparameters, SGD_hyperparameters]
+    nn_configs = []
+
+    for optimiser in optimiser_list:
+        keys, values = zip(*optimiser.items())
+        hyperparameters_dict= [dict(zip(keys, v)) for v in itertools.product(*values)]
+        nn_configs.append(hyperparameters_dict)
+
+    return nn_configs
+
+
+def convert_all_params_to_yaml(nn_configs, yaml_file):
+    with open(yaml_file, 'w') as f:
+        yaml.safe_dump(nn_configs, f, sort_keys=False, default_flow_style=False)
+
+
+def find_best_nn():
+    nn_configs = generate_nn_configs()
+    convert_all_params_to_yaml(nn_configs, '/Users/apple/Documents/GitHub/Data_Science_Airbnb/nn_config.yaml')
+    get_nn_config()
+    for nn_config in nn_configs:
+        for config in nn_config:
+
+        
+   
+    # Calls generate_nn_config() function.
+    # Pass each config through train loop.
+    #  Save config used in the hyperparameters.json file for each model trained.
+    # Save best model in a folder.(call save model)
+    #  Return model, metrics, hyperparameters. 
+
+    
+
         
 
 
@@ -158,43 +197,22 @@ def save_model():
 #   save hyperparameters in json file.
 #   Calculate RMSE loss and R2 score for training, test and validation.
 
-
-
-
-
-
-
-def save_model(model, parameters, metrics, folder):
-    os.makedirs(folder, exist_ok=True)
-    filepaths = []
-    filenames = ['model.joblib','hyperparameters.json', 'metrics.json']
-    for file in filenames:
-        filepath = os.path.join(folder, file)
-        filepaths.append(filepath)
-    model_fp, hyperparams_fp, metrics_fp = filepaths
-    
-    joblib.dump(model, model_fp)
-    
-    with open(hyperparams_fp, 'w') as file:
-        json.dump(parameters, file)
-
-    with open(metrics_fp, 'w') as file:
-        json.dump(metrics, file)
-
-    
+   
   
 if __name__ == '__main__':
-    dataset = AirbnbNightlyPriceRegressionDataset()
-    train_set, test_set, validation_set = random_split(dataset, [0.7, 0.15, 0.15])
-    batch_size = 4
-    train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
-    validation_loader = DataLoader(validation_set, batch_size=batch_size, shuffle=True)
-    test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=True)
+    # dataset = AirbnbNightlyPriceRegressionDataset()
+    # train_set, test_set, validation_set = random_split(dataset, [0.7, 0.15, 0.15])
+    # batch_size = 4
+    # train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
+    # validation_loader = DataLoader(validation_set, batch_size=batch_size, shuffle=True)
+    # test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=True)
 
-    config = get_nn_config()
-    model = NN(config)
-    # train(model, config)
+    # config = get_nn_config()
+    # model = NN(config)
+    # # train(model, config)
 
+    find_best_nn()
+    
  
     
     
