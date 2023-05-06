@@ -1,0 +1,1 @@
+{"optimiser": "Adadelta", "learning_rate": 1.0, "rho": 0.9, "hidden_layer_width": 5, "depth": 3}

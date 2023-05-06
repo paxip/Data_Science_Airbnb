@@ -1,0 +1,1 @@
+{"R2_train": -378617397248.0, "RMSE_train": 32304244.0, "R2_validation": -317011951616.0, "RMSE_validation": 32232088.0, "training duration": 4.078498840332031, "inference_latency": 0.00015225149180791148}

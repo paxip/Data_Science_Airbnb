@@ -1,6 +1,9 @@
+import glob
 import itertools
+import heapq
 import json
 import os
+from pathlib import Path
 import time
 import torch
 import torch.nn.functional as F
@@ -69,7 +72,7 @@ def train(model, config, epochs=10):
     elif config['optimiser'] == 'Adadelta':
         optimiser = torch.optim.Adadelta(model.parameters(), lr=config['learning_rate'], rho=config['rho'])
 
-    writer = SummaryWriter()
+    # writer = SummaryWriter()
     batch_index_1 = 0
     batch_index_2 = 0
     
@@ -130,7 +133,7 @@ def get_nn_config():
 
 def get_metrics(model, config):
     R2_train, RMSE_train, R2_validation, RMSE_validation, training_duration, inference_latency = train(model, config)
-    performance_metrics = {'R2_train': R2_train.item(), 'RMSE_train': RMSE_train, 'R2_validation': R2_validation.item(), 'RMSE_validation': RMSE_validation, 'training duration': training_duration, 'inference_latency': inference_latency}
+    performance_metrics = {'R2_train': R2_train.item(), 'RMSE_train': RMSE_train.item(), 'R2_validation': R2_validation.item(), 'RMSE_validation': RMSE_validation.item(), 'training duration': training_duration, 'inference_latency': inference_latency}
     return performance_metrics
 
 
@@ -139,7 +142,7 @@ def save_model(model, performance_metrics, config):
         print('This model is not a Pytorch module.')
     
     else:
-        folder = os.path.join('Data_Science_Airbnb/neural_networks/regression', datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+        folder = os.path.join('neural_networks/regression', datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
         try:
             os.makedirs(folder)
         except OSError as e:
@@ -178,25 +181,105 @@ def convert_all_params_to_yaml(nn_configs, yaml_file):
         yaml.safe_dump(nn_configs, f, sort_keys=False, default_flow_style=False)
 
 
-def find_best_nn():
+def train_nn_configs():
     nn_configs = generate_nn_configs()
-    R2_list = []
     convert_all_params_to_yaml(nn_configs, '/Users/apple/Documents/GitHub/Data_Science_Airbnb/nn_config.yaml')
     get_nn_config()
     for nn_config in nn_configs:
         for config in nn_config:
             model = NN(config)
-            trained_model = train(model, config)
             performance_metrics = get_metrics(model, config)
-            R2 = performance_metrics['R2_validation']
-            R2_list.append(R2)
+            save_model(model, performance_metrics, config)
+    
+    
+
+def find_best_nn():
+    # metrics_files = glob.glob("./neural_networks/regression/*/metrics.json", recursive=True)
+    R2_list = []
+    # for file in metrics_files:
+    for path in Path('./neural_networks/regression').rglob('*/metrics.json'):
+        f = open(str(path))
+        dic_metrics = json.load(f)
+        f.close()
+        R2 = dic_metrics['R2_validation']
+        R2_list.append(R2)
+
+    print(R2_list)
+    best_R2_score = best_score(R2_list)
+    print(best_R2_score)
+            
+            
+
+
+
+        
+# 
+# path in Path('./neural_networks/regression').rglob('*.metrics.json'):
+            # R2 = performance_metrics['R2_validation']
+            # R2_list.append(R2)
+            
+    
+    
+    
+    
+    # best_R2_score = best_score(R2_list) 
+    # for best_R2_score in R2_list:
+    #     best_model = trained_model
+    #     best_metrics = performance_metrics
+    #     best_hyperparameters = config
+    # print(best_R2_score, best_model, best_metrics, best_hyperparameters)
+    # return best_model, best_metrics, best_hyperparameters
+    
+
+
+
+
+
+
+        
+def best_score(R2_list):
+    perfect_score = 1
+    R2_list.sort()
+    best_R2_score = R2_list[0]
+    for R2 in R2_list:
+        if abs(R2 - perfect_score) < abs(best_R2_score - perfect_score):
+            best_R2_score = R2
+        if R2 > perfect_score:
+            break
+    print(best_R2_score)
+    return best_R2_score
+    
+
 
     
-    print(R2_list)
-    for R2 in R2_list:
-        if R2 <= min(R2_list):
-        best_model = trained_model
-        save_model(best_model, performance_metrics, config)
+
+
+
+
+
+
+
+
+
+
+    # for R2 in R2_list:
+    #     if R2 <= best_score:
+    #         print(R2)       
+    # # if R2 <= best_R2_score:
+    # #     best_model = trained_model
+    # #     print(best_model)
+    # #     print(R2)
+
+    # print(R2_list)
+
+    
+
+    
+      
+        
+
+        
+       
         
         
 
@@ -242,6 +325,9 @@ if __name__ == '__main__':
    
     # # train(model, config)
 
+    # find_best_nn()
+
+    train_nn_configs()
     find_best_nn()
     
  
