@@ -3,7 +3,7 @@ import pandas as pd
 
 
 class Data_Preparation:
-    # def __init__(self):
+    
         
     def remove_rows_with_missing_ratings(self):
         airbnb_df.dropna(subset=['Cleanliness_rating', 'Accuracy_rating', 'Communication_rating', 'Location_rating', 'Check-in_rating', 'Value_rating'], inplace=True)
@@ -33,7 +33,7 @@ class Data_Preparation:
         self.remove_rows_with_missing_ratings()
         self.combine_description_strings()
         self.set_default_feature_values()
-
+      
     def load_airbnb(label:str, df):
         features=df.drop(label, axis=1)
         labels=df[label]
@@ -44,6 +44,9 @@ if __name__ == '__main__':
     airbnb_df.drop('Unnamed: 19', axis=1, inplace=True)
     Data_processor = Data_Preparation()
     Data_processor.clean_tabular_data()
+    airbnb_df.drop('4c917b3c-d693-4ee4-a321-f5babc728dc9', inplace=True)
+    airbnb_df['guests'] = airbnb_df['guests'].astype('int64')
+    airbnb_df['bedrooms'] = airbnb_df['bedrooms'].astype('int64')
     airbnb_df.to_csv(r'/Users/apple/Documents/GitHub/Data_Science_Airbnb/airbnb_datasets/clean_tabular_data.csv') 
     
 
