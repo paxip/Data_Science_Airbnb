@@ -21,21 +21,28 @@ from torch.utils.tensorboard import SummaryWriter
 class AirbnbNightlyPriceRegressionDataset(Dataset):
     def __init__(self):
         super().__init__()
-        self.data = pd.read_csv('/Users/apple/Documents/GitHub/Data_Science_Airbnb/airbnb_datasets/clean_tabular_data.csv')
-        self.data.drop('4c917b3c-d693-4ee4-a321-f5babc728dc9', inplace=True)
-        self.data['bedrooms'] = self.data
-        
-        self.X, self.y = Data_Preparation.load_airbnb('Price_Night', self.data)
+        clean_data = pd.read_csv('/Users/apple/Documents/GitHub/Data_Science_Airbnb/airbnb_datasets/clean_tabular_data.csv')
+        categories = clean_data['Category'].astype('category')
+        # print(categories)
+        encoder = pd.get_dummies(categories)
+        encoder = encoder.astype('int64')
+        clean_data = pd.concat([clean_data, encoder], axis=1)
+        # print(clean_data.info())
+        self.X, self.y = Data_Preparation.load_airbnb(clean_data, 'bedrooms')
         self.X = self.X.select_dtypes(include =['float64', 'int64'])
+        print(self.X.info())
+        print(self.y)
+
+      
+     
     
+     
 
 
 
 if __name__ == '__main__':
     dataset = AirbnbNightlyPriceRegressionDataset()
-    print(dataset)
+    
 
-# Use load_dataset function to get a new airbnb dataset where 'y' is the integer number of bedrooms.
-# Include 'Category' as part of features (X).
 
 #  Run entire pipeline to train entire pipeline and find the best model.

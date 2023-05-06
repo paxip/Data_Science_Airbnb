@@ -34,9 +34,9 @@ class Data_Preparation:
         self.combine_description_strings()
         self.set_default_feature_values()
       
-    def load_airbnb(label:str, df):
-        features=df.drop(label, axis=1)
-        labels=df[label]
+    def load_airbnb(df, column_name):
+        labels = df[column_name]
+        features = df.drop(column_name, axis=1)
         return(features, labels)
     
 if __name__ == '__main__':
