@@ -38,8 +38,6 @@ class NN(torch.nn.Module):
         super().__init__()
         hidden_layer_width = config['hidden_layer_width']
         depth = config['depth']
-        print(hidden_layer_width)
-        print(depth)
         input_nodes = 9
         output_nodes = 1
         self.linear_layers = []
@@ -50,7 +48,6 @@ class NN(torch.nn.Module):
             self.linear_layers.append(torch.nn.ReLU())
         
         self.linear_layers = torch.nn.Sequential(*self.linear_layers)
-        print(self.linear_layers)
 
         self.output_layer = torch.nn.Linear(hidden_layer_width, output_nodes)
         
@@ -181,7 +178,7 @@ def convert_all_params_to_yaml(nn_configs, yaml_file):
         yaml.safe_dump(nn_configs, f, sort_keys=False, default_flow_style=False)
 
 
-def train_nn_configs():
+def find_best_nn():
     nn_configs = generate_nn_configs()
     convert_all_params_to_yaml(nn_configs, '/Users/apple/Documents/GitHub/Data_Science_Airbnb/nn_config.yaml')
     get_nn_config()
@@ -190,53 +187,49 @@ def train_nn_configs():
             model = NN(config)
             performance_metrics = get_metrics(model, config)
             save_model(model, performance_metrics, config)
-    
-    
 
-def find_best_nn():
-    # metrics_files = glob.glob("./neural_networks/regression/*/metrics.json", recursive=True)
+    R2_list = get_R2_scores()
+    best_R2_score = best_score(R2_list)
+    for best_R2_score in R2_list:
+        best_model = model
+        best_performance_metrics = performance_metrics
+        best_hyperparameters = config
+    save_best_model(best_model, best_performance_metrics, best_hyperparameters)
+    print(best_model, best_hyperparameters, best_performance_metrics)
+    return best_model, best_hyperparameters, best_performance_metrics
+
+
+def get_R2_scores():
     R2_list = []
-    # for file in metrics_files:
     for path in Path('./neural_networks/regression').rglob('*/metrics.json'):
         f = open(str(path))
         dic_metrics = json.load(f)
         f.close()
         R2 = dic_metrics['R2_validation']
         R2_list.append(R2)
-
     print(R2_list)
-    best_R2_score = best_score(R2_list)
-    print(best_R2_score)
-            
-            
+    return R2_list
+   
+
+def save_best_model(model, metrics, config):
+    folder = os.path.join('neural_networks/regression', 'best_model')
+    try:
+        os.makedirs(folder)
+    except OSError as e:
+        print(e)
+
+    file_name = 'best_model.pt'
+    filepath = os.path.join(folder, file_name)
+    state_dictionary = model.state_dict()
+    torch.save(state_dictionary, filepath)
+
+    with open(f"{folder}/best_metrics.json", 'w') as fp:
+        json.dump(metrics, fp)  
+
+    with open(f"{folder}/best_hyperparameters.json", 'w') as fp:
+        json.dump(config, fp)  
 
 
-
-        
-# 
-# path in Path('./neural_networks/regression').rglob('*.metrics.json'):
-            # R2 = performance_metrics['R2_validation']
-            # R2_list.append(R2)
-            
-    
-    
-    
-    
-    # best_R2_score = best_score(R2_list) 
-    # for best_R2_score in R2_list:
-    #     best_model = trained_model
-    #     best_metrics = performance_metrics
-    #     best_hyperparameters = config
-    # print(best_R2_score, best_model, best_metrics, best_hyperparameters)
-    # return best_model, best_metrics, best_hyperparameters
-    
-
-
-
-
-
-
-        
 def best_score(R2_list):
     perfect_score = 1
     R2_list.sort()
@@ -250,69 +243,7 @@ def best_score(R2_list):
     return best_R2_score
     
 
-
-    
-
-
-
-
-
-
-
-
-
-
-    # for R2 in R2_list:
-    #     if R2 <= best_score:
-    #         print(R2)       
-    # # if R2 <= best_R2_score:
-    # #     best_model = trained_model
-    # #     print(best_model)
-    # #     print(R2)
-
-    # print(R2_list)
-
-    
-
-    
-      
-        
-
-        
-       
-        
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Save R2 value and    
-   
-
-    #  Save config used in the hyperparameters.json file for each model trained.
-    # Save best model in a folder.(call save model)
-    #  Return model, metrics, hyperparameters. 
-
-    
-
-        
-
-
-
-
-#   save hyperparameters in json file.
-#   Calculate RMSE loss and R2 score for training, test and validation.
-
-   
+ 
   
 if __name__ == '__main__':
     dataset = AirbnbNightlyPriceRegressionDataset()
@@ -327,8 +258,8 @@ if __name__ == '__main__':
 
     # find_best_nn()
 
-    train_nn_configs()
     find_best_nn()
+    
     
  
     
