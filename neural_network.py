@@ -32,7 +32,6 @@ class AirbnbNightlyPriceRegressionDataset(Dataset):
         return len(self.X)
 
 
-
 class NN(torch.nn.Module):
     def __init__(self, config):
         super().__init__()
@@ -120,6 +119,18 @@ def train(model, config, epochs=10):
 
     return R2_train, RMSE_train, R2_validation, RMSE_validation, training_duration, inference_latency
 
+def split_data():
+    train_set, test_set, validation_set = random_split(dataset, [0.7, 0.15, 0.15])
+    return train_set, test_set, validation_set
+    
+def get_data_loader():
+    train_set, test_set, validation_set = split_data()
+    batch_size = 4
+    train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
+    validation_loader = DataLoader(validation_set, batch_size=batch_size, shuffle=True)
+    test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=True)
+    return train_loader, validation_loader, test_loader
+
 def get_nn_config():
     with open('/Users/apple/Documents/GitHub/Data_Science_Airbnb/nn_config.yaml', 'r') as stream:
         try:
@@ -132,7 +143,6 @@ def get_metrics(model, config):
     R2_train, RMSE_train, R2_validation, RMSE_validation, training_duration, inference_latency = train(model, config)
     performance_metrics = {'R2_train': R2_train.item(), 'RMSE_train': RMSE_train.item(), 'R2_validation': R2_validation.item(), 'RMSE_validation': RMSE_validation.item(), 'training duration': training_duration, 'inference_latency': inference_latency}
     return performance_metrics
-
 
 def save_model(model, performance_metrics, config):
     if not isinstance(model, torch.nn.Module):
@@ -156,7 +166,6 @@ def save_model(model, performance_metrics, config):
         with open(f"{folder}/hyperparameters.json", 'w') as fp:
             json.dump(config, fp)  
 
-
 def generate_nn_configs():
     Adam_hyperparameters = {'optimiser': ['Adam'], 'learning_rate': [0.001, 0.0001], 'amsgrad': [True, False], 'hidden_layer_width': [5], 'depth': [3]}
     Adadelta_hyperparameters = {'optimiser': ['Adadelta'], 'learning_rate': [1.0, 0.001, 0.0001], 'rho': [0.3, 0.9], 'hidden_layer_width': [5], 'depth': [3]}
@@ -172,11 +181,9 @@ def generate_nn_configs():
 
     return nn_configs
 
-
 def convert_all_params_to_yaml(nn_configs, yaml_file):
     with open(yaml_file, 'w') as f:
         yaml.safe_dump(nn_configs, f, sort_keys=False, default_flow_style=False)
-
 
 def find_best_nn():
     nn_configs = generate_nn_configs()
@@ -195,9 +202,8 @@ def find_best_nn():
         best_performance_metrics = performance_metrics
         best_hyperparameters = config
     save_best_model(best_model, best_performance_metrics, best_hyperparameters)
-    print(best_model, best_hyperparameters, best_performance_metrics)
+    print(f'best model: {best_model}, \nbest hyperparameters: {best_hyperparameters}, \nbest_performance_metrics: {best_performance_metrics}, \nbest_R2_score: {best_R2_score}')
     return best_model, best_hyperparameters, best_performance_metrics
-
 
 def get_R2_scores():
     R2_list = []
@@ -208,8 +214,7 @@ def get_R2_scores():
         R2 = dic_metrics['R2_validation']
         R2_list.append(R2)
     print(R2_list)
-    return R2_list
-   
+    return R2_list   
 
 def save_best_model(model, metrics, config):
     folder = os.path.join('neural_networks/regression', 'best_model')
@@ -229,7 +234,6 @@ def save_best_model(model, metrics, config):
     with open(f"{folder}/best_hyperparameters.json", 'w') as fp:
         json.dump(config, fp)  
 
-
 def best_score(R2_list):
     perfect_score = 1
     R2_list.sort()
@@ -247,21 +251,11 @@ def best_score(R2_list):
   
 if __name__ == '__main__':
     dataset = AirbnbNightlyPriceRegressionDataset()
-    train_set, test_set, validation_set = random_split(dataset, [0.7, 0.15, 0.15])
-    batch_size = 4
-    train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
-    validation_loader = DataLoader(validation_set, batch_size=batch_size, shuffle=True)
-    test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=True)
-
-   
-    # # train(model, config)
-
-    # find_best_nn()
-
+    train_loader, validation_loader, test_loader = get_data_loader()
     find_best_nn()
     
     
- 
+
     
     
     
@@ -278,38 +272,3 @@ if __name__ == '__main__':
 
 
 
-
-# for epoch in range(epochs):
-#         for batch in train_loader:
-#             X, y = batch
-#             X = X.to(torch.float32)
-#             y = y.to(torch.float32)
-#             y = torch.unsqueeze(y, 1)
-#             y_prediction = model(X)
-#             train_loss = F.mse_loss(y_prediction, y)
-#             train_loss.backward()
-#             print(f'Train loss is {train_loss.item()}')
-#             R2_train = R2Score()
-#             R2_train = R2_train(y_prediction, y)
-#             optimiser.step()
-#             optimiser.zero_grad()
-#             writer.add_scalar('train loss', train_loss.item(), batch_index)
-#             writer.add_scalar('train accuracy', R2_train, batch_index)       
-                    
-#         for batch in validation_loader:
-#             X, y = batch
-#             X = X.to(torch.float32)
-#             y = y.to(torch.float32)
-#             y = torch.unsqueeze(y, 1)
-#             y_validation = model(X)
-#             validation_loss = F.mse_loss(y_validation, y)
-#             validation_loss.backward()
-#             print(f'Validation loss is {validation_loss.item()}')
-#             R2_validation = R2Score()
-#             R2_validation = R2_validation(y_validation, y)
-#             optimiser.step()
-#             optimiser.zero_grad()
-#             writer.add_scalar('validation loss', validation_loss.item(), batch_index)
-#             writer.add_scalar('validation accuracy', R2_validation, batch_index)
-
-#             batch_index += 1
