@@ -21,12 +21,16 @@ from torch.utils.tensorboard import SummaryWriter
 class AirbnbNightlyPriceRegressionDataset(Dataset):
     def __init__(self):
         super().__init__()
-        self.data = pd.read_csv('/Users/apple/Documents/GitHub/Data_Science_Airbnb/airbnb_datasets/clean_tabular_data.csv')
-        self.X, self.y = Data_Preparation.load_airbnb('Price_Night', self.data)
+        data = pd.read_csv('/Users/apple/Documents/GitHub/Data_Science_Airbnb/airbnb_datasets/clean_tabular_data.csv')
+        self.X, self.y = Data_Preparation.load_airbnb(data, 'Price_Night')
         self.X = self.X.select_dtypes(include =['float64', 'int64'])
-    
+  
     def __getitem__(self, index):
-        return (torch.tensor(self.X.iloc[index]), torch.tensor(self.y.iloc[index]))
+        X = self.X.iloc[index]
+        X = torch.tensor(X).float()
+        y = self.y.iloc[index]
+        y = torch.tensor(y).float()
+        return X, y     
     
     def __len__(self):
         return len(self.X)
@@ -37,7 +41,7 @@ class NN(torch.nn.Module):
         super().__init__()
         hidden_layer_width = config['hidden_layer_width']
         depth = config['depth']
-        input_nodes = 9
+        input_nodes = 11
         output_nodes = 1
         self.linear_layers = []
         self.input_layer = torch.nn.Linear(input_nodes, hidden_layer_width)
@@ -120,8 +124,10 @@ def train(model, config, epochs=10):
     return R2_train, RMSE_train, R2_validation, RMSE_validation, training_duration, inference_latency
 
 def split_data():
-    train_set, test_set, validation_set = random_split(dataset, [0.7, 0.15, 0.15])
-    return train_set, test_set, validation_set
+    train_set, test_set = random_split(dataset, [0.7, 0.3])
+    train_set, validation_set = random_split(train_set, [0.5, 0.5])
+    
+    return train_set, validation_set, test_set
     
 def get_data_loader():
     train_set, test_set, validation_set = split_data()
@@ -189,65 +195,48 @@ def find_best_nn():
     nn_configs = generate_nn_configs()
     convert_all_params_to_yaml(nn_configs, '/Users/apple/Documents/GitHub/Data_Science_Airbnb/nn_config.yaml')
     get_nn_config()
+    R2_list = []
     for nn_config in nn_configs:
         for config in nn_config:
             model = NN(config)
             performance_metrics = get_metrics(model, config)
             save_model(model, performance_metrics, config)
-
-    R2_list = get_R2_scores()
+            R2 = performance_metrics['R2_validation']
+            R2_list.append(R2)
+    
     best_R2_score = best_score(R2_list)
-    for best_R2_score in R2_list:
-        best_model = model
-        best_performance_metrics = performance_metrics
-        best_hyperparameters = config
-    save_best_model(best_model, best_performance_metrics, best_hyperparameters)
-    print(f'best model: {best_model}, \nbest hyperparameters: {best_hyperparameters}, \nbest_performance_metrics: {best_performance_metrics}, \nbest_R2_score: {best_R2_score}')
-    return best_model, best_hyperparameters, best_performance_metrics
+    index = R2_list.index(best_R2_score)
+    file_list = get_file_list()
+    best_model_fp = file_list[index]
 
-def get_R2_scores():
-    R2_list = []
-    for path in Path('./neural_networks/regression').rglob('*/metrics.json'):
-        f = open(str(path))
-        dic_metrics = json.load(f)
-        f.close()
-        R2 = dic_metrics['R2_validation']
-        R2_list.append(R2)
-    print(R2_list)
-    return R2_list   
+    path = (f'/Users/apple/Documents/GitHub/Data_Science_Airbnb/neural_networks/regression/{best_model_fp}/')
+    best_model = torch.load(path + 'model.pt')
 
-def save_best_model(model, metrics, config):
-    folder = os.path.join('neural_networks/regression', 'best_model')
-    try:
-        os.makedirs(folder)
-    except OSError as e:
-        print(e)
+    with open (path + 'hyperparameters.json', 'r') as fp:
+        params = json.load(fp)
+    
+    with open (path + 'metrics.json', 'r') as fp:
+        metrics = json.load(fp)
+    
+    return best_model, params, metrics 
 
-    file_name = 'best_model.pt'
-    filepath = os.path.join(folder, file_name)
-    state_dictionary = model.state_dict()
-    torch.save(state_dictionary, filepath)
-
-    with open(f"{folder}/best_metrics.json", 'w') as fp:
-        json.dump(metrics, fp)  
-
-    with open(f"{folder}/best_hyperparameters.json", 'w') as fp:
-        json.dump(config, fp)  
+def get_file_list():
+    directory = '/Users/apple/Documents/GitHub/Data_Science_Airbnb/neural_networks/regression'
+    file_list = os.listdir(directory)
+    file_list.sort()
+    return file_list
 
 def best_score(R2_list):
     perfect_score = 1
-    R2_list.sort()
     best_R2_score = R2_list[0]
     for R2 in R2_list:
         if abs(R2 - perfect_score) < abs(best_R2_score - perfect_score):
             best_R2_score = R2
         if R2 > perfect_score:
             break
-    print(best_R2_score)
-    return best_R2_score
-    
+    return best_R2_score   
+  
 
- 
   
 if __name__ == '__main__':
     dataset = AirbnbNightlyPriceRegressionDataset()
